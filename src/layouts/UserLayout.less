@@ -1,0 +1,90 @@
+@import '~antd/lib/style/themes/default.less';
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: auto;
+  background: #fafaff;
+
+}
+.background {
+  position: absolute;
+  display: block;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom:0;
+  z-index: 0;
+  overflow: hidden;
+}
+.lang {
+  text-align: right;
+  width: 100%;
+  height: 40px;
+  line-height: 44px;
+  :global(.ant-dropdown-trigger) {
+    margin-right: 24px;
+  }
+}
+
+.content {
+  margin: 200px auto;
+  background: rgba(255,255,255,0.9);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  padding: 80px;
+  width: 100%;
+  max-width: 1000px;
+  border-radius: 15px;
+  //flex: 1;
+}
+
+@media (max-width: @screen-md-min) {
+  .content {
+    flex-direction: column;
+    padding: 40px;
+  }
+}
+
+.left {
+  text-align: center;
+}
+
+.header {
+  height: 44px;
+  line-height: 44px;
+  a {
+    text-decoration: none;
+  }
+}
+
+.logo {
+  height: 44px;
+  vertical-align: top;
+  margin-right: 16px;
+}
+
+.title {
+  font-size: 33px;
+  color: @heading-color;
+  font-family: 'Myriad Pro', 'Helvetica Neue', Arial, Helvetica, sans-serif;
+  font-weight: 600;
+  position: relative;
+  top: 2px;
+}
+@media (max-width: @screen-md-min) {
+  .title {
+    font-size: 20px;
+
+  }
+}
+.desc {
+  font-size: 16px;
+  color: @text-color-secondary;
+  margin-top: 12px;
+  margin-bottom: 40px;
+}
