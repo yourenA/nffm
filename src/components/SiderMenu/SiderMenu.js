@@ -95,7 +95,7 @@ export default class SiderMenu extends PureComponent {
       [styles.fixSiderbar]: fixSiderbar,
       [styles.light]: theme === 'light',
     });
-
+    let company_name=localStorage.getItem('company_name');
     return (
       <Sider
         trigger={null}
@@ -110,7 +110,7 @@ export default class SiderMenu extends PureComponent {
         <div className={styles.logo} id="logo">
           <Link to="/">
             <img src={logo} alt="logo" />
-            <h1>辂轺科技MQTT系统</h1>
+            <h1>{company_name}MQTT</h1>
           </Link>
         </div>
         <BaseMenu

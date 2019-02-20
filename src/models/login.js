@@ -15,10 +15,12 @@ export default {
   effects: {
     *login({ payload }, { call, put }) {
       console.log('payload',payload)
-      let response = yield call(fakeAccountLogin, {company_code:'amwares',...payload});
+      let response = yield call(fakeAccountLogin, {...payload});
       if (response.status === 200) {
         localStorage.setItem('username', response.data.data.username);
         localStorage.setItem('token', response.data.data.token);
+        localStorage.setItem('company_name', response.data.data.company_name);
+        localStorage.setItem('company_code', response.data.data.company_code);
         yield put({
           type: 'changeLoginStatus',
           payload: response,
@@ -50,6 +52,8 @@ export default {
     *logout(_, { call, put }) {
       const response = yield call(logout);
       console.log(response);
+      let company_code=localStorage.getItem('company_code');
+      console.log('company_code',company_code)
       localStorage.clear();
       yield put({
         type: 'changeLoginStatus',
@@ -59,7 +63,7 @@ export default {
       });
       yield put(
         routerRedux.push({
-          pathname: '/user/login',
+          pathname: '/user/login/'+company_code,
           search: stringify({
             redirect: window.location.href,
           }),

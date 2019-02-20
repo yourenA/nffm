@@ -22,6 +22,10 @@ class LoginPage extends Component {
 
 
   handleSubmit = (e) => {
+    const {location} = this.props;
+    let {pathname} = location;
+    let company_code = pathname.split('/')[3];
+    console.log('company_code',company_code)
     e.preventDefault();
       this.props.form.validateFields({force: true},
         (err, values) => {
@@ -30,6 +34,7 @@ class LoginPage extends Component {
             this.props.dispatch({
               type: `login/login`,
               payload: {
+                company_code,
                 ...values,
                 // company_id:values.company_id.key,
               },

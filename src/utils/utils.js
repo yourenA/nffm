@@ -199,7 +199,8 @@ export function converErrorCodeToMsg(error) {
     // message.error(messageJson['token fail']);
     removeLoginStorage();
     setTimeout(function () {
-      window.location.href = '/user/login';
+      let company_code=localStorage.getItem('company_code');
+      window.location.href = '/user/login/'+company_code;
     },1000)
   } else if (!error.response.data.errors) {
     message.error(error.response.data.message);

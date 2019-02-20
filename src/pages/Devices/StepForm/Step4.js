@@ -47,7 +47,7 @@ class Step3 extends React.PureComponent {
     };
     const information = (
       <div className={styles.information}>
-        <Row>
+        { this.props.hideAction===true && <Row>
           <Col xs={12} sm={3} className={styles.label}>
             用户名：
           </Col>
@@ -60,7 +60,7 @@ class Step3 extends React.PureComponent {
           <Col xs={12} sm={10}>
             {data.password}
           </Col>
-        </Row>
+        </Row>}
         <Divider >设备信息</Divider>
         <Row>
           <Col xs={12} sm={3} className={styles.label}>
