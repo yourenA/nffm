@@ -101,6 +101,13 @@ class Step1 extends React.PureComponent {
                 <Input />
               )}
             </Form.Item>
+          <Form.Item {...formItemLayout} label="传感器别名">
+            {getFieldDecorator(`alias#${item}`, {
+              initialValue: this.props.stepData.sensors ? this.props.stepData.sensors[index]?this.props.stepData.sensors[index].alias:'' : '',
+            })(
+              <Input />
+            )}
+          </Form.Item>
             <Form.Item
               {...formItemLayout}
               label="传感器数据类型"

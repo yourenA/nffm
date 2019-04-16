@@ -238,6 +238,7 @@ export function converDevicesInfo(data) {
   for(let i=0;i<sensorskey.length;i++){
     sensorsArr.push({
       number:data[`number#${sensorskey[i]}`],
+      alias:data[`alias#${sensorskey[i]}`],
       data_type:data[`data_type#${sensorskey[i]}`],
       remark:data[`remark#${sensorskey[i]}`],
     })
@@ -258,3 +259,36 @@ export function converDevicesInfo(data) {
 export function isAntdPro() {
   return window.location.hostname === 'preview.pro.ant.design';
 }
+export function ellipsis2(val, len = 150) {
+  if (val !== undefined) {
+    return (
+      <Tooltip
+        placement="topLeft"
+        title={<p style={{wordWrap: 'break-word'}}>{val}</p>}>
+        <p style={{
+          display: 'inline-block',
+          width: `${len - 15}px`,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap'
+        }}>{val}</p>
+      </Tooltip>
+    )
+  } else {
+    return ''
+  }
+
+}
+exports.ellipsis2 = ellipsis2;
+
+
+function renderIndex(meta, page, index) {
+  const parseIndex = meta ? String((meta.per_page * (page - 1)) + (index + 1)) : 0;
+  return (
+    <span title={parseIndex}>
+                {parseIndex.length > 4 ? parseIndex.substring(0, 3) + '...' : parseIndex}
+            </span>
+  )
+}
+
+exports.renderIndex = renderIndex;

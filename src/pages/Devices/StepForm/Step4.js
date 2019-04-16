@@ -66,13 +66,19 @@ class Step3 extends React.PureComponent {
           <Col xs={12} sm={3} className={styles.label}>
             设备编号：
           </Col>
-          <Col xs={12} sm={5}>
+          <Col xs={12} sm={4}>
             {data.number}
+          </Col>
+            <Col xs={12} sm={4} className={styles.label}>
+            设备别名：
+          </Col>
+          <Col xs={12} sm={4}>
+            {data.alias}
           </Col>
           <Col xs={12} sm={3} className={styles.label}>
             设备备注：
           </Col>
-          <Col xs={12} sm={5}>
+          <Col xs={12} sm={4}>
             {data.remark}
           </Col>
         </Row>
@@ -88,15 +94,21 @@ class Step3 extends React.PureComponent {
                   {item.number}
                 </Col>
                 <Col xs={12} sm={4} className={styles.label}>
+                  传感器别名：
+                </Col>
+                <Col xs={12} sm={4}>
+                  {item.alias}
+                </Col>
+                <Col xs={12} sm={3} className={styles.label}>
                   数据类型：
                 </Col>
                 <Col xs={12} sm={4}>
                   {item.data_type==='1'?'整型':'浮点型'}
                 </Col>
-                <Col xs={12} sm={4} className={styles.label}>
+                <Col xs={12} sm={3} className={styles.label}>
                   备注：
                 </Col>
-                <Col xs={12} sm={5}>
+                <Col xs={12} sm={4}>
                   {item.remark}
                 </Col>
               </Row>
@@ -120,10 +132,10 @@ class Step3 extends React.PureComponent {
                 <Col xs={12} sm={4}>
                   {item.allow_publish==='1'?'是':'否'}
                 </Col>
-                <Col xs={12} sm={4} className={styles.label}>
+                <Col xs={12} sm={3} className={styles.label}>
                   是否允许订阅：
                 </Col>
-                <Col xs={12} sm={5}>
+                <Col xs={12} sm={4}>
                   {item.allow_subscribe==='1'?'是':'否'}
                 </Col>
               </Row>

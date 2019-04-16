@@ -14,9 +14,8 @@ export default class LiquidPosition extends PureComponent {
     this.myChart = [];
     this.state = {
       data: [],
-      // initRange:[moment(new Date(), 'YYYY-MM-DD').subtract('day', 2), moment(new Date(), 'YYYY-MM-DD')],
+      initRange:[moment(new Date(), 'YYYY-MM-DD').subtract('day', 1), moment(new Date(), 'YYYY-MM-DD')],
       sensor_numbers:[],
-      limit:'100'
     }
   }
 
@@ -24,47 +23,45 @@ export default class LiquidPosition extends PureComponent {
     const that = this;
     window.addEventListener('resize', this.resizeChart)
     this.getData({
-      // start:this.state.initRange[0].valueOf(),
-      // end:this.state.initRange[1].valueOf(),
-      sensor_numbers:this.state.sensor_numbers,
-      limit:this.state.limit,
+      start:this.state.initRange[0].valueOf(),
+      end:this.state.initRange[1].valueOf(),
+      sensor_numbers:this.state.sensor_numbers
     });
 
   }
 
   getData = (values)=> {
-    console.log('values',values)
+    console.log('获取数据')
     const that = this;
     request(`/device_values/${this.props.data.id}`, {
       method: 'get',
       params: {
-        // started_timestamp:values.start,
-        // ended_timestamp:values.end,
+        started_timestamp:values.start,
+        ended_timestamp:values.end,
         sensor_numbers:values.sensor_numbers,
-        limit:Number(values.limit),
       }
     }).then((response)=> {
       that.setState({
         data: response.data.data,
-        // initRange:[moment(new Date(), 'YYYY-MM-DD').subtract('day', 3), moment(new Date(), 'YYYY-MM-DD')],
       },function () {
         that.dynamic(that.state.data);
         if(that.timer){
           clearTimeout(that.timer)
         }
-        that.timer=setTimeout(function () {
-          that.getData({
-            sensor_numbers:that.state.sensor_numbers,
-            limit:that.state.limit,
-          });
-        },10000)
+        // that.timer=setTimeout(function () {
+        //   that.getData({
+        //     start:that.state.initRange[0].valueOf(),
+        //     end:that.state.initRange[1].valueOf(),
+        //     sensor_id:that.state.sensor_id
+        //   });
+        // },10000)
       })
     })
   }
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.resizeChart);
-    clearTimeout(this.timer)
+    // clearTimeout(this.timer)
   }
 
   resizeChart = ()=> {
@@ -87,7 +84,7 @@ export default class LiquidPosition extends PureComponent {
         that.myChart.push(that['myChart' + i])
         let xData = [];
         let yData = [];
-        let errorIndex=[];
+        let errorIndex=[]
         data[i].values.reverse();
         for(let j=0;j<data[i].values.length;j++){
           if(data[i].values[j].code!==0){
@@ -137,14 +134,13 @@ export default class LiquidPosition extends PureComponent {
             data: yData,
             type: 'line',
             large: true,
+            symbolSize:10,
             label: {
               normal: {
                 show: true,
                 position: 'top'
               }
             },
-            symbolSize: 10,
-            symbol: 'circle',
             lineStyle:{
               normal: {
                 color:'#008aff'
@@ -175,6 +171,8 @@ export default class LiquidPosition extends PureComponent {
 
   }
   onChange=(value, dateString)=>{
+    console.log('Selected Time: ', value);
+    console.log('Formatted Selected Time: ', dateString);
     this.setState({
       initRange:value
     })
@@ -185,61 +183,104 @@ export default class LiquidPosition extends PureComponent {
       initRange:value
     },function () {
       this.getData({
+        start:this.state.initRange[0].valueOf(),
+        end:this.state.initRange[1].valueOf(),
         sensor_numbers:this.state.sensor_numbers
       });
     })
   }
-  handleChange=(value,e)=>{
+  handleChange=(value)=>{
     console.log('value',value)
     this.setState({
       sensor_numbers:value
     },function () {
       this.getData({
-        sensor_numbers:this.state.sensor_numbers,
-        limit:this.state.limit,
-
-      });
-    })
-  }
-  handleChangeLimit=(value)=>{
-    console.log('value',value)
-    this.setState({
-      limit:value
-    },function () {
-      this.getData({
-        sensor_numbers:this.state.sensor_numbers,
-        limit:this.state.limit,
+        start:this.state.initRange[0].valueOf(),
+        end:this.state.initRange[1].valueOf(),
+        sensor_numbers:this.state.sensor_numbers
       });
     })
   }
   render() {
+    const columns = [
+      {
+        title: '序号',
+        dataIndex: 'id',
+        key: 'id',
+        width: 50,
+        className: 'table-index',
+        render: (text, record, index) => {
+          return (index+1)
+        }
+      },
+      {title: '时间戳', dataIndex: 'timestamp', key: 'timestamp'},
+      {title: '时间', dataIndex: 'time', key: 'time',render: (val, record, index) => {
+        return moment(record.timestamp).format('YYYY-MM-DD HH:mm:ss') +"  "+record.timestamp.toString().substring(10)
+      }},
+      {title: '读值', dataIndex: 'value', key: 'value'},
+      {title:'错误码', dataIndex: 'code', key: 'code',render:(val,record)=>{
+        return `${val===0?'正常':'异常'} : ${val}`
+      }},
+    ];
     return (
           <div >
             <Button type='primary' icon="left" onClick={this.props.turnPre}>返回设备列表</Button>
-            <div  style={{marginTop:'12px',marginBottom:'12px'}}>
-              显示最新数据数量: <Select value={this.state.limit}   style={{ width: 120,marginRight:'12px' }}   onChange={this.handleChangeLimit}>
-              <Option  value={'100'} >100 </Option>
-              <Option  value={'200'} >200 </Option>
-              <Option  value={'500'} >500 </Option>
-            </Select>
-              传感器编号: <Select value={this.state.sensor_numbers}  mode="multiple"  allowClear={true}  style={{ width: 350}}   onChange={this.handleChange}>
+            <div style={{marginTop:'12px',marginRight:'12px'}}>
+              时间区间: <RangePicker
+              showTime={{ format: 'HH:mm:ss' }}
+              format="YYYY-MM-DD HH:mm:ss"
+              placeholder={['开始时间', '结束时间']}
+              onChange={this.onChange}
+              onOk={this.onOk}
+              value={this.state.initRange}
+              style={{marginTop:'12px',marginRight:'12px'}}
+            />
+              传感器编号: <Select value={this.state.sensor_numbers}  mode="multiple" style={{ width: 350 }}  allowClear={true}  onChange={this.handleChange}>
                 {
                   this.props.data.sensors.map((item,index)=>{
                     return  <Option key={item.number} value={item.number} >{item.number} </Option>
                   })
                 }
               </Select>
-
             </div>
-            {this.state.data.length>0?
-              <div>
-                {this.state.data.map((item, index)=> {
-                  return   <div key={index} className={ `detail-item-${index}`} style={{marginBottom:'16px',width: '100%', height: '400px'}}></div>
 
-                })}
+            <Tabs defaultActiveKey="1">
+              <TabPane tab="折线图" key="1">
+                {this.state.data.length>0?
+                  <div>
+                    {this.state.data.map((item, index)=> {
+                      return   <div key={index} className={ `detail-item-${index}`} style={{marginBottom:'16px',width: '100%', height: '400px'}}></div>
 
-              </div>
-              : <Empty />}
+                    })}
+
+                  </div>
+                  : <Empty />}
+              </TabPane>
+              <TabPane tab="表格" key="2">
+                {this.state.data.length > 0 ?
+                  <div>
+                    {this.state.data.map((item, index)=> {
+                      return  <Table
+                        key={index}
+                        style={{marginTop:'12px'}}
+                        title={() => <h3>传感器: {item.number} 别名: {item.alias}</h3>}
+                        bordered
+                        columns={columns}
+                        dataSource={[...item.values]}
+                        pagination={false}
+                        size="small"
+                        rowKey={record => record.timestamp}
+                      />
+
+                    })}
+
+                  </div>
+                  : <Empty />
+                }
+
+              </TabPane>
+            </Tabs>
+
           </div>
     );
   }

@@ -1,6 +1,6 @@
-import React, { PureComponent,Fragment } from 'react';
-import { connect } from 'dva';
-import { Card, Button, Icon, List ,Form,Steps,Modal,message,Drawer,Badge,Menu,Dropdown} from 'antd';
+import React, {PureComponent, Fragment} from 'react';
+import {connect} from 'dva';
+import {Card, Table, Icon, Tooltip, Form, Steps, Modal, message, Drawer, Badge, Menu, Dropdown,Divider,Button,BackTop} from 'antd';
 import Step1 from './StepForm/Step1'
 import Step2 from './StepForm/Step2'
 import Step3 from './StepForm/Step3'
@@ -8,44 +8,57 @@ import Step4 from './StepForm/Step4'
 import Ellipsis from '@/components/Ellipsis';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import DetailAnalysis from './DetailAnalysis';
+import HistoryDetailAnalysis from './HistoryDetailAnalysis';
 import SendData from './SendData';
 import styles from './Index.less';
-const { Step } = Steps;
-@connect(({ devices, loading }) => ({
+import Search from './Search'
+import {renderIndex, ellipsis2} from '@/utils/utils'
+const {Step} = Steps;
+@connect(({devices, loading}) => ({
   devices,
 }))
 @Form.create()
 class Devices extends PureComponent {
   state = {
     addContent: false,
-    stepData:{},
+    historyContent:false,
+    realTimeContent:false,
+    stepData: {},
     current: 0,
     page: 1,
+    number: '',
+    alias: '',
     per_page: 30
   };
-  hideContent=()=>{
+  hideContent = ()=> {
 
     this.setState({
       current: 0,
-      stepData:{},
-      addContent:false
+      stepData: {},
+      addContent: false
     })
     this.handleSearch({
       page: this.state.page,
       per_page: this.state.per_page,
+      number: this.state.number,
+      alias: this.state.alias,
     })
   }
+
   componentDidMount() {
-    const { dispatch } = this.props;
+    const {dispatch} = this.props;
     dispatch({
       type: 'devices/fetch',
       payload: {
         page: 1,
-        per_page: 30
+        per_page: 30,
+        number: '',
+        alias: '',
       },
 
     });
   }
+
   handleSearch = (values, cb) => {
     console.log('handleSearch', values)
     const that = this;
@@ -64,17 +77,25 @@ class Devices extends PureComponent {
       }
     });
   }
-  setStep=(step)=>{
-    this.setState({
-      current:step
+  handleFormReset = () => {
+    this.handleSearch({
+      page: 1,
+      number: '',
+      alias: '',
+      per_page: 30
     })
   }
-  setStepData=(data,step)=>{
+  setStep = (step)=> {
+    this.setState({
+      current: step
+    })
+  }
+  setStepData = (data, step)=> {
     // console.log('data',data)
     this.setState({
-      stepData:data
-    },function () {
-      console.log('setStepData',this.state.stepData)
+      stepData: data
+    }, function () {
+      console.log('setStepData', this.state.stepData)
       this.setStep(step)
     })
   }
@@ -88,6 +109,8 @@ class Devices extends PureComponent {
         this.handleSearch({
           page: this.state.page,
           per_page: this.state.per_page,
+          number: this.state.number,
+          alias: this.state.alias,
         })
       }
     });
@@ -102,23 +125,19 @@ class Devices extends PureComponent {
         this.handleSearch({
           page: this.state.page,
           per_page: this.state.per_page,
+          number: this.state.number,
+          alias: this.state.alias,
         })
       }
     });
   }
+
   render() {
     const {
-      devices: { data,loading ,meta},
+      devices: {data, loading, meta},
     } = this.props;
 
-    const content = (
-      <div className={styles.pageHeaderContent}>
-        <p>
-          添加"设备"同时添加"传感器信息"与"主题信息"
-        </p>
-        <p>点击设备名称查看传感器历史数据</p>
-      </div>
-    );
+
 
     const extraContent = (
       <div className={styles.extraImg}>
@@ -141,11 +160,10 @@ class Devices extends PureComponent {
         this.handleSearch({page, per_page: pageSize})
       },
     };
-
-    const itemMenu =(item)=> (
-      <Menu onClick={(e)=>{
-        console.log('key',e.key)
-        if(e.key==='delete'){
+    const itemMenu = (item)=> (
+      <Menu onClick={(e)=> {
+        console.log('key', e.key)
+        if (e.key === 'delete') {
           Modal.confirm({
             title: '删除设备',
             content: '确定删除该设备吗？',
@@ -154,7 +172,7 @@ class Devices extends PureComponent {
             onOk: () => this.deleteItem(item.id),
           })
         }
-        if(e.key==='reset'){
+        if (e.key === 'reset') {
           Modal.confirm({
             title: '密码重置',
             content: '确定重置该设备密码吗？',
@@ -163,117 +181,363 @@ class Devices extends PureComponent {
             onOk: () => this.resetItem(item.id),
           })
         }
+        if (e.key === 'sendData') {
+          this.setState({senDataModal:true,stepData:{...item}})
+        }
       }}>
+        <Menu.Item key="sendData">
+          模拟发送数据
+        </Menu.Item>
         <Menu.Item key="reset">
-            重置密码
+          重置密码
         </Menu.Item>
         <Menu.Item key="delete">
-            删除
+          删除
         </Menu.Item>
       </Menu>
     );
+    const columns = [
+      {
+        title: '序号',
+        dataIndex: 'id',
+        key: 'id',
+        width: 50,
+        className: 'table-index',
+        render: (text, record, index) => {
+          return renderIndex(meta, this.state.page, index)
+        }
+      },
+      {
+        title: '设备编号', dataIndex: 'number', key: 'number',
+        render: (val, record, index) => {
+          let html=(<span style={{color:'#722ED1'}}>{val}</span>)
+          return <Tooltip
+            placement="topLeft"
+            title={<p style={{wordWrap: 'break-word'}}>{val}</p>}>
+            <p
+              onClick={()=>{this.setState({detailModal:true,stepData:{...record}})}}
+              style={{
+              cursor:'pointer',
+              display: 'inline-block',
+              width: `100px`,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}>{html}</p>
+          </Tooltip>
+        }
+      },
+      {
+        title: '设备别名', dataIndex: 'alias', key: 'alias',
+        render: (val, record, index) => {
+          return ellipsis2(val, 100)
+        }
+      },
+      {
+        title: '状态', dataIndex: 'is_online', key: 'is_online',
+
+        render: (val, record, index) => {
+          let status = 'success';
+          let text = '在线';
+          switch (val) {
+            case -1:
+              status = 'error'
+              text = '离线';
+
+              break;
+            default:
+              status = 'success'
+              text = '在线';
+
+          }
+          return (
+            <p>
+              <Badge status={status}/>{text}
+            </p>
+          )
+        }
+      },
+      {
+        title: '操作',
+        float:'right',
+        width:300,
+        render: (val, record, index) => (
+          <div>
+            <Button size="small"  type="dashed"  onClick={()=>{this.setState({addContent:true,stepData:{...record}})}}>编辑</Button>
+            <Divider type="vertical" />
+            <Button size="small"  type="primary"  onClick={()=>{this.setState({analysisModal:true,realTimeContent:true,stepData:{...record}})}}>实时记录</Button>
+            <Divider type="vertical" />
+            <Button size="small"  type="primary"  onClick={()=>{this.setState({analysisModal:true,historyContent:true,stepData:{...record}})}}>历史纪录</Button>
+            <Divider type="vertical" />
+            <Dropdown overlay={itemMenu(record)}>
+              <Button  size="small">
+                更多<Icon type="down" />
+              </Button>
+            </Dropdown>
+          </div>
+        ),
+      }
+    ];
+
+    /*   const columns = [
+     {
+     title: '序号',
+     dataIndex: 'id',
+     key: 'id',
+     width: 50,
+     className: 'table-index',
+     fixed: 'left',
+     render: (text, record, index) => {
+     return renderIndex(meta,this.state.page,index)
+     }
+     },
+     {title: '集中器编号', width: 100, dataIndex: 'concentrator_number', key: 'concentrator_number'
+     , render: (val, record, index) => {
+     return (
+     <p  className="link" onClick={()=>{
+     dispatch(routerRedux.push(`/${company_code}/main/unusual_analysis/concentrator_unusual_analysis?concentrator=${val}&date=${record.date}`));
+     }} >{val}</p>
+     )
+     }},
+     {title: '水表编号', width: 110, dataIndex: 'meter_number', key: 'meter_number',render: (text, record, index) => {
+     return ellipsis2(text,110)
+     }},
+     {title: '户号', width: 100, dataIndex: 'member_number', key: 'member_number',render: (text, record, index) => {
+     return ellipsis2(text,100)
+     }},
+
+     {title: '用户名称', width: 100, dataIndex: 'real_name', key: 'real_name',render: (text, record, index) => {
+     return ellipsis2(text,100)
+     }},
+     {title: '地址', width: 150, dataIndex: 'address', key: 'address',render: (text, record, index) => {
+     return ellipsis2(text,150)
+     }},
+     {title: '日期', dataIndex: 'date',  key: 'date',width:100,render: (text, record, index) => {
+     return ellipsis2(text,100)
+     }},
+     {
+     title: '异常类型', width: 100, dataIndex: 'status', key: 'status'
+     , render: (val, record, index) => {
+     let status='success';
+     switch (val){
+     case -2:
+     status='error'
+     break;
+     case -1:
+     status='warning'
+     break;
+     default:
+     status='success'
+     }
+
+     return (
+     <p>
+     <Badge status={status}/>{record.status_explain}
+     </p>
+     )
+     }
+     },
+
+     {title: '用水量', width: 80, dataIndex: 'consumption', key: 'consumption',
+     render: (val, record, index) => {
+     return renderErrorData(val)
+     }
+     },
+     {title: '集中器协议', dataIndex: 'protocols', key: 'protocols', width: 90,render: (val, record, index) => {
+     if(val){
+     return ellipsis2(val.join('|'), 90)
+     }else{
+     return ''
+     }
+     }},
+     {title: '厂商名称', dataIndex: 'manufacturer_name',  key: 'manufacturer_name'},
+
+     ];*/
+    let title='设备列表';
+    let content = (
+      <div className={styles.pageHeaderContent}>
+        <p>
+          添加"设备"同时添加"传感器信息"与"主题信息"
+        </p>
+        <p>点击设备名称查看传感器历史数据</p>
+
+      </div>
+    );
+    if(this.state.historyContent){
+      title=`设备(${this.state.stepData.number})历史数据`;
+      content = (
+        <div className={styles.pageHeaderContent}>
+          <p>
+            更改时间可以查询不同日期的数据
+          </p>
+          <p>
+            红色点表示出错数据
+          </p>
+        </div>
+      )
+    }
+    if(this.state.realTimeContent){
+      title=`设备(${this.state.stepData.number})实时数据`;
+      content = (
+        <div className={styles.pageHeaderContent}>
+          <p>
+            设备实时数据每隔10秒刷新一次
+          </p>
+          <p>
+            红色点表示出错数据
+          </p>
+        </div>
+      )
+    }
     return (
-      <PageHeaderWrapper title="设备列表" content={content} extraContent={extraContent}>
-        {!this.state.addContent?
+      <PageHeaderWrapper title={title} content={content} extraContent={extraContent}>
+        {!this.state.addContent ?
+          // <div className={styles.cardList}>
+          //   <List
+          //     rowKey="id"
+          //     loading={loading}
+          //     grid={{ gutter: 12, lg: 4, md: 3, sm: 2, xs: 1 }}
+          //     dataSource={['', ...data]}
+          //     pagination={paginationProps}
+          //     renderItem={item =>
+          //       item ? (
+          //         <List.Item key={item.id}>
+          //           <Card hoverable className={styles.card} actions={[
+          //             <a title="详情" className={styles.card_action} onClick={()=>{this.setState({detailModal:true,stepData:{...item}})}}>详情</a>
+          //             ,<a title="编辑" className={styles.card_action} onClick={()=>{this.setState({addContent:true,stepData:{...item}})}}>编辑</a>,
+          //             <a title="发送数据" className={styles.card_action} onClick={()=>{this.setState({senDataModal:true,stepData:{...item}})}}>发送数据</a>,
+          //             <Dropdown overlay={itemMenu(item)}>
+          //               <span>更多</span>
+          //             </Dropdown>
+          //           ]}>
+          //             <Card.Meta
+          //               title={<span>
+//
+          //                 {item.is_online === -1 && <span>离线<Badge status="error" style={{marginLeft: '5px',marginTop: '-5px'}}/></span>}
+          //                 {item.is_online === 1 && <span>在线<Badge status="success" style={{marginLeft: '5px',marginTop: '-5px'}}/></span>}
+          //                 <a className={styles.title} onClick={()=>{this.setState({analysisModal:true,stepData:{...item}})}}>{item.number}
+          //                 </a>
+          //               </span>}
+          //               description={
+          //                 <div>
+          //                   <Ellipsis className={styles.item} lines={1}>
+          //                     别名 : {item.alias}
+          //                   </Ellipsis>
+          //                   <Ellipsis className={styles.item} lines={1}>
+          //                     用户名 : {item.username}
+          //                   </Ellipsis>
+//
+          //                 </div>
+          //               }
+          //             />
+          //           </Card>
+          //         </List.Item>
+          //       ) : (
+          //         <List.Item>
+          //           <Button type="dashed" className={styles.newButton} onClick={()=>{this.setState({addContent:true,})}}>
+          //             <Icon type="plus" /> 新增设备
+          //           </Button>
+          //         </List.Item>
+          //       )
+          //     }
+          //   />
+          // </div>
           <div className={styles.cardList}>
-            <List
-              rowKey="id"
-              loading={loading}
-              grid={{ gutter: 24, lg: 3, md: 2, sm: 1, xs: 1 }}
-              dataSource={['', ...data]}
-              pagination={paginationProps}
-              renderItem={item =>
-                item ? (
-                  <List.Item key={item.id}>
-                    <Card hoverable className={styles.card} actions={[
-                      <a onClick={()=>{this.setState({detailModal:true,stepData:{...item}})}}>详情</a>
-                      ,<a onClick={()=>{this.setState({addContent:true,stepData:{...item}})}}>编辑</a>,
-                      <a onClick={()=>{this.setState({senDataModal:true,stepData:{...item}})}}>发送数据</a>,
-                      <Dropdown overlay={itemMenu(item)}>
-                        <span>更多</span>
-                      </Dropdown>
-                    ]}>
-                      <Card.Meta
-                        title={<span>
+            {
+              (!this.state.realTimeContent&&!this.state.historyContent)&&<div>
+              <Search
+                handleSearch={this.handleSearch}
+                handleFormReset={this.handleFormReset}
+                per_page={this.state.per_page}
+                addContent={this.state.addContent}
+                number={this.state.number}
+                alias={this.state.alias}
+                addDevice={()=> {
+                  this.setState({addContent: true,})
+                }}
+              />
+              <Table
+                className={styles.whiteBg}
+                loading={loading}
+                rowKey={'id'}
+                dataSource={data}
+                bordered
+                columns={columns}
+                pagination={paginationProps}
+              />
+            </div>
+            }
+            {
+               this.state.historyContent&&
+              <div className={styles.data_content}>
+                <HistoryDetailAnalysis data={this.state.stepData}
+                                       turnPre={()=>this.setState({historyContent:false})}/>
+              </div>
+            }.  {
+             this.state.realTimeContent&&
+            <div className={styles.data_content}>
+              <DetailAnalysis data={this.state.stepData}
+                              turnPre={()=>this.setState({realTimeContent:false})}/>
+            </div>
+          }
 
-                          {item.is_online === -1 && <span>离线<Badge status="error" style={{marginLeft: '5px',marginTop: '-5px'}}/></span>}
-                          {item.is_online === 1 && <span>在线<Badge status="success" style={{marginLeft: '5px',marginTop: '-5px'}}/></span>}
-                          <a className={styles.title} onClick={()=>{this.setState({analysisModal:true,stepData:{...item}})}}>{item.number}
-                          </a>
-                        </span>}
-                        description={
-                          <div>
-                            <Ellipsis className={styles.item} lines={1}>
-                              用户名 : {item.username}
-                            </Ellipsis>
-                            <Ellipsis className={styles.item} lines={1}>
-                              密钥 : {item.password}
-                            </Ellipsis>
-                          </div>
-                        }
-                      />
-                    </Card>
-                  </List.Item>
-                ) : (
-                  <List.Item>
-                    <Button type="dashed" className={styles.newButton} onClick={()=>{this.setState({addContent:true,})}}>
-                      <Icon type="plus" /> 新增设备
-                    </Button>
-                  </List.Item>
-                )
-              }
-            />
-          </div>:
-        <div>
-          <Card>
-            <h3 style={{marginBottom:'16px'}}>{this.state.stepData.id?`修改设备${this.state.stepData.number}`:'新增设备'}</h3>
-            <Fragment>
+          </div>
+          :
+          <div>
+            <Card>
+              <h3
+                style={{marginBottom: '16px'}}>{this.state.stepData.id ? `修改设备${this.state.stepData.number}` : '新增设备'}</h3>
+              <Fragment>
 
-              <Steps current={this.state.current} className={styles.steps}>
-                <Step title="填写设备信息" />
-                <Step title="填写传感器信息" />
-                <Step title="填写主题信息" />
-                <Step title="提交" />
-              </Steps>
-              {this.state.current===0&&<Step1 hideContent={this.hideContent} stepData={this.state.stepData}  setStepData={this.setStepData} setStep={this.setStep}/>}
-              {this.state.current===1&&<Step2 hideContent={this.hideContent} stepData={this.state.stepData}  setStepData={this.setStepData} setStep={this.setStep}/>}
-              {this.state.current===2&&<Step3 hideContent={this.hideContent} stepData={this.state.stepData}  setStepData={this.setStepData} setStep={this.setStep}/>}
-              {this.state.current===3&&<Step4 hideContent={this.hideContent}  stepData={this.state.stepData}  setStepData={this.setStepData} setStep={this.setStep}/>}
-            </Fragment>
-          </Card>
+                <Steps current={this.state.current} className={styles.steps}>
+                  <Step title="填写设备信息"/>
+                  <Step title="填写传感器信息"/>
+                  <Step title="填写主题信息"/>
+                  <Step title="提交"/>
+                </Steps>
+                {this.state.current === 0 &&
+                <Step1 hideContent={this.hideContent} stepData={this.state.stepData} setStepData={this.setStepData}
+                       setStep={this.setStep}/>}
+                {this.state.current === 1 &&
+                <Step2 hideContent={this.hideContent} stepData={this.state.stepData} setStepData={this.setStepData}
+                       setStep={this.setStep}/>}
+                {this.state.current === 2 &&
+                <Step3 hideContent={this.hideContent} stepData={this.state.stepData} setStepData={this.setStepData}
+                       setStep={this.setStep}/>}
+                {this.state.current === 3 &&
+                <Step4 hideContent={this.hideContent} stepData={this.state.stepData} setStepData={this.setStepData}
+                       setStep={this.setStep}/>}
+              </Fragment>
+            </Card>
 
-        </div>}
+          </div>}
         <Modal
-          title={this.state.stepData.number+'详情'}
-          width={860}
+          title={this.state.stepData.number + '详情'}
+          width={900}
           destroyOnClose
           visible={this.state.detailModal}
           footer={null}
-          onCancel={()=>{this.setState({detailModal:false,stepData:{}})}}
+          centered
+          onCancel={()=> {
+            this.setState({detailModal: false, stepData: {}})
+          }}
         >
-          <Step4   stepData={this.state.stepData} hideAction={true}/>
+          <Step4 stepData={this.state.stepData} hideAction={true}/>
 
         </Modal>
-        <Drawer
-          title={`${this.state.stepData.number}设备传感器历史数据`}
-          placement="right"
-          closable={false}
-          width={640}
-          onClose={()=>{this.setState({stepData:{},analysisModal:false})}}
-          visible={this.state.analysisModal}
-        >
-          {this.state.analysisModal&&<DetailAnalysis data={this.state.stepData}/>}
-        </Drawer>
         <Drawer
           title={`${this.state.stepData.number} 发布消息`}
           placement="right"
           closable={false}
           width={500}
-          onClose={()=>{this.setState({stepData:{},senDataModal:false})}}
+          onClose={()=> {
+            this.setState({stepData: {}, senDataModal: false})
+          }}
           visible={this.state.senDataModal}
         >
           {<SendData data={this.state.stepData}/>}
         </Drawer>
+        <BackTop/>
       </PageHeaderWrapper>
     );
   }

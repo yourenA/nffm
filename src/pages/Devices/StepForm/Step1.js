@@ -40,6 +40,13 @@ class Step1 extends React.PureComponent {
               <Input disabled={stepData.id?true:false}/>
             )}
           </Form.Item>
+          <Form.Item {...formItemLayout} label="设备别名">
+            {getFieldDecorator('alias', {
+              initialValue: stepData?stepData.alias:'',
+            })(
+              <Input />
+            )}
+          </Form.Item>
           <Form.Item {...formItemLayout} label="备注">
             {getFieldDecorator('remark', {
               initialValue: stepData?stepData.remark:'',
