@@ -64,3 +64,35 @@
   vertical-align: middle;
   margin-right: 5px;
 }
+
+.addForm{
+  :global {
+    .ant-col {
+      display: inline-block !important;
+    }
+  }
+}
+.channel_item{
+  &:odd{
+    background: #2eabff;
+  }
+}
+.channel_wrap{
+  display: flex;
+  padding: 8px;
+}
+.channel_span{
+  display: inline-block;
+  width: 49%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space:nowrap;
+  vertical-align: middle;
+
+}
+.title{
+  display: inline-block;
+  width: 40%;
+  vertical-align: middle;
+  text-align: right;
+}

@@ -279,80 +279,6 @@ class Devices extends PureComponent {
       }
     ];
 
-    /*   const columns = [
-     {
-     title: '序号',
-     dataIndex: 'id',
-     key: 'id',
-     width: 50,
-     className: 'table-index',
-     fixed: 'left',
-     render: (text, record, index) => {
-     return renderIndex(meta,this.state.page,index)
-     }
-     },
-     {title: '集中器编号', width: 100, dataIndex: 'concentrator_number', key: 'concentrator_number'
-     , render: (val, record, index) => {
-     return (
-     <p  className="link" onClick={()=>{
-     dispatch(routerRedux.push(`/${company_code}/main/unusual_analysis/concentrator_unusual_analysis?concentrator=${val}&date=${record.date}`));
-     }} >{val}</p>
-     )
-     }},
-     {title: '水表编号', width: 110, dataIndex: 'meter_number', key: 'meter_number',render: (text, record, index) => {
-     return ellipsis2(text,110)
-     }},
-     {title: '户号', width: 100, dataIndex: 'member_number', key: 'member_number',render: (text, record, index) => {
-     return ellipsis2(text,100)
-     }},
-
-     {title: '用户名称', width: 100, dataIndex: 'real_name', key: 'real_name',render: (text, record, index) => {
-     return ellipsis2(text,100)
-     }},
-     {title: '地址', width: 150, dataIndex: 'address', key: 'address',render: (text, record, index) => {
-     return ellipsis2(text,150)
-     }},
-     {title: '日期', dataIndex: 'date',  key: 'date',width:100,render: (text, record, index) => {
-     return ellipsis2(text,100)
-     }},
-     {
-     title: '异常类型', width: 100, dataIndex: 'status', key: 'status'
-     , render: (val, record, index) => {
-     let status='success';
-     switch (val){
-     case -2:
-     status='error'
-     break;
-     case -1:
-     status='warning'
-     break;
-     default:
-     status='success'
-     }
-
-     return (
-     <p>
-     <Badge status={status}/>{record.status_explain}
-     </p>
-     )
-     }
-     },
-
-     {title: '用水量', width: 80, dataIndex: 'consumption', key: 'consumption',
-     render: (val, record, index) => {
-     return renderErrorData(val)
-     }
-     },
-     {title: '集中器协议', dataIndex: 'protocols', key: 'protocols', width: 90,render: (val, record, index) => {
-     if(val){
-     return ellipsis2(val.join('|'), 90)
-     }else{
-     return ''
-     }
-     }},
-     {title: '厂商名称', dataIndex: 'manufacturer_name',  key: 'manufacturer_name'},
-
-     ];*/
     let title='设备列表';
     let content = (
       <div className={styles.pageHeaderContent}>
@@ -392,56 +318,6 @@ class Devices extends PureComponent {
     return (
       <PageHeaderWrapper title={title} content={content} extraContent={extraContent}>
         {!this.state.addContent ?
-          // <div className={styles.cardList}>
-          //   <List
-          //     rowKey="id"
-          //     loading={loading}
-          //     grid={{ gutter: 12, lg: 4, md: 3, sm: 2, xs: 1 }}
-          //     dataSource={['', ...data]}
-          //     pagination={paginationProps}
-          //     renderItem={item =>
-          //       item ? (
-          //         <List.Item key={item.id}>
-          //           <Card hoverable className={styles.card} actions={[
-          //             <a title="详情" className={styles.card_action} onClick={()=>{this.setState({detailModal:true,stepData:{...item}})}}>详情</a>
-          //             ,<a title="编辑" className={styles.card_action} onClick={()=>{this.setState({addContent:true,stepData:{...item}})}}>编辑</a>,
-          //             <a title="发送数据" className={styles.card_action} onClick={()=>{this.setState({senDataModal:true,stepData:{...item}})}}>发送数据</a>,
-          //             <Dropdown overlay={itemMenu(item)}>
-          //               <span>更多</span>
-          //             </Dropdown>
-          //           ]}>
-          //             <Card.Meta
-          //               title={<span>
-//
-          //                 {item.is_online === -1 && <span>离线<Badge status="error" style={{marginLeft: '5px',marginTop: '-5px'}}/></span>}
-          //                 {item.is_online === 1 && <span>在线<Badge status="success" style={{marginLeft: '5px',marginTop: '-5px'}}/></span>}
-          //                 <a className={styles.title} onClick={()=>{this.setState({analysisModal:true,stepData:{...item}})}}>{item.number}
-          //                 </a>
-          //               </span>}
-          //               description={
-          //                 <div>
-          //                   <Ellipsis className={styles.item} lines={1}>
-          //                     别名 : {item.alias}
-          //                   </Ellipsis>
-          //                   <Ellipsis className={styles.item} lines={1}>
-          //                     用户名 : {item.username}
-          //                   </Ellipsis>
-//
-          //                 </div>
-          //               }
-          //             />
-          //           </Card>
-          //         </List.Item>
-          //       ) : (
-          //         <List.Item>
-          //           <Button type="dashed" className={styles.newButton} onClick={()=>{this.setState({addContent:true,})}}>
-          //             <Icon type="plus" /> 新增设备
-          //           </Button>
-          //         </List.Item>
-          //       )
-          //     }
-          //   />
-          // </div>
           <div className={styles.cardList}>
             {
               (!this.state.realTimeContent&&!this.state.historyContent)&&<div>

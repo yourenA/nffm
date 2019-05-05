@@ -12,7 +12,8 @@ import { formatMessage } from 'umi/locale';
 import SiderMenu from '@/components/SiderMenu';
 import Authorized from '@/utils/Authorized';
 import SettingDrawer from '@/components/SettingDrawer';
-import logo from '../images/pro-icon.png';
+import logo from '../images/zhuhua.png';
+import up from '../images/up.png';
 import Footer from './Footer';
 import Header from './Header';
 import Context from './MenuContext';
@@ -180,13 +181,13 @@ class BasicLayout extends React.PureComponent {
     const currRouterData = this.matchParamsPath(pathname);
 
     if (!currRouterData) {
-      return 'Ant Design Pro';
+      return '南方阀门';
     }
     const message = formatMessage({
       id: currRouterData.locale || currRouterData.name,
       defaultMessage: currRouterData.name,
     });
-    return `${message} - Ant Design Pro`;
+    return `${message} - 南方阀门`;
   };
 
   getLayoutStyle = () => {
@@ -273,10 +274,18 @@ class BasicLayout extends React.PureComponent {
             {params => (
               <Context.Provider value={this.getContext()}>
                 <div className={classNames(params)}>{layout}
+                  <BackTop >
+                    <div  className="backup-inner">
+                      <img src={up} alt=""/>
+                    </div>
+
+                  </BackTop>
                  </div>
               </Context.Provider>
             )}
+
           </ContainerQuery>
+
         </DocumentTitle>
         {/*  {this.renderSettingDrawer()}*/}
       </React.Fragment>

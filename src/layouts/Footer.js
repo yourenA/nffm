@@ -28,7 +28,7 @@ const FooterView = () => (
       ]}
       copyright={
         <Fragment>
-          Copyright <Icon type="copyright" /> 2018 广州辂轺信息科技有限公司出品
+          Copyright <Icon type="copyright" /> 2019 广州辂轺信息科技有限公司出品
         </Fragment>
       }
     />

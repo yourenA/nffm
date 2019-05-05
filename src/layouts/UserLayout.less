@@ -5,19 +5,9 @@
   flex-direction: column;
   height: 100vh;
   overflow: auto;
-  background: #fafaff;
+  background: @layout-body-background;
+}
 
-}
-.background {
-  position: absolute;
-  display: block;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom:0;
-  z-index: 0;
-  overflow: hidden;
-}
 .lang {
   text-align: right;
   width: 100%;
@@ -29,28 +19,30 @@
 }
 
 .content {
-  margin: 200px auto;
-  background: rgba(255,255,255,0.9);
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-  padding: 80px;
-  width: 100%;
-  max-width: 1000px;
-  border-radius: 15px;
+  padding: 32px 0;
+  margin:150px auto;
+  opacity: 0.96;
   //flex: 1;
 }
 
-@media (max-width: @screen-md-min) {
+@media (min-width: @screen-md-min) {
+  .container {
+    background-image: url('./../images/water.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+  }
+
   .content {
-    flex-direction: column;
-    padding: 40px;
+    margin:150px auto;
+    background: #fff;
+    padding: 35px 0;
+    width: 100%;
+    max-width: 500px;
   }
 }
 
-.left {
+.top {
   text-align: center;
 }
 
@@ -69,21 +61,16 @@
 }
 
 .title {
-  font-size: 33px;
+  font-size: 24px;
   color: @heading-color;
   font-family: 'Myriad Pro', 'Helvetica Neue', Arial, Helvetica, sans-serif;
   font-weight: 600;
   position: relative;
   top: 2px;
 }
-@media (max-width: @screen-md-min) {
-  .title {
-    font-size: 20px;
 
-  }
-}
 .desc {
-  font-size: 16px;
+  font-size: 14px;
   color: @text-color-secondary;
   margin-top: 12px;
   margin-bottom: 40px;

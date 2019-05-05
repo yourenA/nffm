@@ -117,7 +117,7 @@ class BasicList extends PureComponent {
     e.preventDefault();
     const {dispatch, form} = this.props;
     const {current} = this.state;
-    const id = current ? current.user_id : '';
+    const id = current ? current.id : '';
     const that = this;
     setTimeout(() => this.addBtn.blur(), 0);
     form.validateFields((err, fieldsValue) => {
@@ -137,6 +137,7 @@ class BasicList extends PureComponent {
   };
 
   deleteItem = id => {
+    console.log('id',id)
     const {dispatch} = this.props;
     dispatch({
       type: 'user_manage/remove',
@@ -183,7 +184,7 @@ class BasicList extends PureComponent {
           content: '确定重置该用户密码吗？',
           okText: '确认',
           cancelText: '取消',
-          onOk: () => this.resetItem(currentItem.user_id),
+          onOk: () => this.resetItem(currentItem.id),
         });
       } else if (key === 'delete') {
         Modal.confirm({
@@ -191,7 +192,7 @@ class BasicList extends PureComponent {
           content: '确定删除该用户吗？',
           okText: '确认',
           cancelText: '取消',
-          onOk: () => this.deleteItem(currentItem.user_id),
+          onOk: () => this.deleteItem(currentItem.id),
         });
       }
     };

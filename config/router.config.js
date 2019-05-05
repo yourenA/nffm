@@ -24,12 +24,12 @@ export default [
       { path: '/', redirect: '/monitor/analysis' },
       {
         path: '/monitor',
-        name: '监控信息',
+        name: '系统整体信息',
         icon: 'home',
         routes: [
           {
             path: '/monitor/analysis',
-            name: '系统整体信息',
+            name: '首页',
             component: './Home/Index',
           }
         ],
@@ -37,13 +37,142 @@ export default [
       {
         path: '/device',
         name: '设备管理',
-        icon: 'heat-map',
+        icon: 'dashboard',
         routes: [
           {
-            path: '/device/device-list',
-            name: '设备列表',
-            component: './Devices/Index',
-          }
+            path: '/device/devices',
+            name: '设备管理',
+            // component: './Forms/StepForm',
+            hideChildrenInMenu: true,
+            routes: [
+              {
+                path: '/device/devices',
+                name: '设备管理',
+                redirect: '/device/devices/list',
+              },
+              {
+                path: '/device/devices/list',
+                name: '设备列表',
+                component: './Devices-ignore/TableList',
+              },
+              {
+                path: '/device/devices/add_or_edit',
+                name: '设备添加/编辑',
+                component: './Devices-ignore/AddOrEditDevice',
+              },
+              // {
+              //   path: '/device/devices/sensors',
+              //   name: '传感器列表',
+              //   component: './Devices-ignore/Sensors',
+              // },
+              {
+                path: '/device/devices/info',
+                component: './Devices-ignore/DeviceInfo',
+                routes: [
+                  {
+                    path: '/device/devices/info/sensors',
+                    name: '设备通道',
+                    component: './Devices-ignore/Channels',
+                  },
+                  {
+                    path: '/device/devices/info/history',
+                    name: '设备历史数据',
+                    component: './Devices-ignore/DeviceHistory',
+                  },
+                  {
+                    path: '/device/devices/info/real_time',
+                    name: '设备实时数据',
+                    component: './Devices-ignore/DeviceRealTime',
+                  },
+                  {
+                    path: '/device/devices/info/valves',
+                    name: '阀门控制',
+                    component: './Devices-ignore/Valves',
+                  },
+                  {
+                    path: '/device/devices/info/information',
+                    name: '阀门控制',
+                    component: './Devices-ignore/Information',
+                  },
+                  {
+                    path: '/device/devices/info/configs',
+                    name: '设备配置',
+                    component: './Devices-ignore/Configs',
+                  },
+                ]
+              },
+
+            ],
+          },
+
+          {
+            path: '/device/device_types',
+            name: '设备类型',
+            // component: './Forms/StepForm',
+            hideChildrenInMenu: true,
+            routes: [
+              {
+                path: '/device/device_types',
+                name: '设备类型',
+                redirect: '/device/device_types/list',
+              },
+              {
+                path: '/device/device_types/list',
+                name: '设备列表',
+                component: './Device_types/Index',
+              },
+              // {
+              //   path: '/device/devices/sensors',
+              //   name: '传感器列表',
+              //   component: './Devices-ignore/Sensors',
+              // },
+              {
+                path: '/device/device_types/info',
+                component: './Device_types/DeviceTypeInfo',
+                routes: [
+                  {
+                    path: '/device/device_types/info/views',
+                    name: '视图列表',
+                    component: './Device_types/Views',
+                  },
+                ]
+              },
+
+            ],
+          },
+          {
+            path: '/device/view_templates',
+            name: '视图模板',
+            // component: './Forms/StepForm',
+            hideChildrenInMenu: true,
+            routes: [
+              {
+                path: '/device/view_templates',
+                name: '视图模板列表',
+                redirect: '/device/view_templates/list',
+              },
+              {
+                path: '/device/view_templates/list',
+                name: '视图模板列表',
+                component: './View_templates/Index',
+              },
+              {
+                path: '/device/view_templates/add_or_edit',
+                name: '视图模板',
+                component: './View_templates/AddOrEdit',
+              },
+            ],
+          },
+          // {
+          //   path: '/monitor/map',
+          //   name: '地图信息',
+          //   component: './Monitor/Monitor',
+          // },
+          // {
+          //   path: '/monitor/workplace',
+          //   name: '视频监控',
+          //   component: './Monitor/Workplace',
+          // },
         ],
       },
       {

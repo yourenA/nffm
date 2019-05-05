@@ -2,5 +2,5 @@
  * Created by Administrator on 2018/4/28.
  */
 module.exports={
-  port:3014
+  port:5005
 }

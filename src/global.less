@@ -40,8 +40,11 @@ ol {
 p{
   margin-bottom: 0;
 }
-.ant-table-thead > tr > th, .ant-table-tbody > tr > td {
-  padding: 8px 8px !important;
+
+.primary_text{
+  cursor: pointer;
+  color: @primary-color;
+  text-decoration: underline;
 }
 .ant-table-tbody {
   tr:nth-child(odd) {
@@ -51,8 +54,70 @@ p{
     background-color: #f9f9f9;
   }
 }
+.operate-content{
+  margin-bottom: 16px;
+}
+.ant-back-top {
+  right: 62px !important;
+}
+.ant-tabs-nav .ant-tabs-tab{
+  margin-right:16px !important;
+}
+.backup-inner{
+
+  height: 40px;
+  width: 40px;
+  line-height: 40px;
+  border-radius: 4px;
+  background-color: rgba(0,0,0,0.4);
+  color: #fff;
+  text-align: center;
+  font-size: 20px;
+
+  img{
+    margin-top: -5px;
+    width: 20px;
+    height: 20px;
+  }
+}
 .ant-divider, .ant-divider-vertical{
   margin: 0px 4px !important;
+}
+.ant-modal .ant-form-item{
+  margin-bottom: 5px;
+}
+
+.ant-table-small{
+  overflow-x:auto ;
+}
+.ant-table-small > .ant-table-content  .ant-table-thead {
+  margin: 0 !important;
+  tr th {
+    font-size: 12px;
+    background: #4472c4 !important;
+    color: #ffffff;
+    white-space: nowrap;
+  }
+}
+.ant-table-small > .ant-table-content  .ant-table-body{
+  margin:  0 !important;
+  thead tr th{
+    font-size: 12px;
+    background: #4472c4 !important;
+    color: #ffffff;
+    white-space:nowrap;
+  }
+  tbody{
+    font-size: 12px;
+    white-space:nowrap;
+    tr:nth-of-type(odd) {
+      background: #e9ebf5;
+
+    }
+    tr:nth-of-type(even) {
+      background: #cfd5ea;
+    }
+  }
 }
 //.ant-card{
 //  background: transparent !important;

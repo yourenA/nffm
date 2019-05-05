@@ -2,9 +2,14 @@ import React, { Fragment } from 'react';
 import { formatMessage } from 'umi/locale';
 import Link from 'umi/link';
 import styles from './UserLayout.less';
-import logo from '../images/pro-icon.png';
-
-
+import logo from '../images/zhuhua.png';
+import GlobalFooter from '@/components/GlobalFooter';
+import { Icon } from 'antd';
+const copyright = (
+  <Fragment>
+    Copyright <Icon type="copyright" /> 2019 广州辂轺信息科技有限公司出品
+  </Fragment>
+);
 
 class UserLayout extends React.PureComponent {
   // @TODO title
@@ -19,51 +24,26 @@ class UserLayout extends React.PureComponent {
   // }
   componentDidMount() {
 
-      window.Particles.init({
-        selector: '.background',
-        color: '#59065F',
-        maxParticles: 130,
-        connectParticles: true,
-        responsive: [
-          {
-            breakpoint: 768,
-            options: {
-              maxParticles: 80
-            }
-          }, {
-            breakpoint: 375,
-            options: {
-              maxParticles: 50
-            }
-          }
-        ]
-      });
-
   }
   render() {
     const { children } = this.props;
     return (
       // @TODO <DocumentTitle title={this.getPageTitle()}>
       <div className={styles.container}>
-        <canvas className=
-                  "background"
-        ></canvas>
         {/*   <div className={styles.lang}>
-          <SelectLang />
-        </div>*/}
+         <SelectLang />
+         </div>*/}
         <div className={styles.content}>
-          <div className={styles.left}>
+          <div className={styles.top}>
             <div className={styles.header}>
-              <Link to="/">
                 <img alt="logo" className={styles.logo} src={logo} />
-                <span className={styles.title}>广州辂轺科技</span>
-              </Link>
+                <span className={styles.title}>南方阀门智慧产品设备数据平台</span>
             </div>
-            <div className={styles.desc}>MQTT管理系统</div>
+            <div className={styles.desc}>集设备管理数据分析于一体</div>
           </div>
           {children}
         </div>
-
+        <GlobalFooter  copyright={copyright} />
       </div>
     );
   }

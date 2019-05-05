@@ -238,9 +238,10 @@ export function converDevicesInfo(data) {
   for(let i=0;i<sensorskey.length;i++){
     sensorsArr.push({
       number:data[`number#${sensorskey[i]}`],
-      alias:data[`alias#${sensorskey[i]}`],
+      name:data[`name#${sensorskey[i]}`],
       data_type:data[`data_type#${sensorskey[i]}`],
-      remark:data[`remark#${sensorskey[i]}`],
+      data_unit:data[`data_unit#${sensorskey[i]}`],
+      is_controllable:data[`is_controllable#${sensorskey[i]}`],
     })
   }
   for(let j=0;j<topicskey.length;j++){

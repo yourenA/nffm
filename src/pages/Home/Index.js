@@ -44,7 +44,7 @@ class BasicList extends PureComponent {
   render() {
     return (
       <Card>
-        <span style={{margin:'50px auto'}}>内容建设中...</span>
+        <p style={{margin:'50px auto',fontSize:'28px',textAlign:'center'}}>南方阀门智慧产品设备数据平台</p>
       </Card>
     )
   }
