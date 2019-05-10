@@ -233,76 +233,24 @@ class TableList extends PureComponent {
       view_templates: {data, loading, meta},
     } = this.props;
     const { dispatch } = this.props;
-    const menu = (
-      <Menu onClick={this.handleMenuClick} selectedKeys={[]}>
-        <Menu.Item key="remove">删除</Menu.Item>
-        <Menu.Item key="approval">关闭</Menu.Item>
-      </Menu>
-    );
-    const that = this;
-    const itemMenu = (record)=> (
-      <Menu onClick={(e)=> {
-        if (e.key === 'delete') {
-          Modal.confirm({
-            title: '删除设备',
-            content: `确定删除 ${record.name} 吗？`,
-            okText: '确认',
-            cancelText: '取消',
-            onOk: () => this.handleDelete(record.id),
-          })
-        }
-        if (e.key === 'edit') {
-          this.setState({
-            editModal: true,
-            editRecord: record
-          })
-        }
-        if (e.key === 'mqtt') {
-          this.getMqttInfo(record.id)
-        }
-        if (e.key === 'view') {
-          dispatch(routerRedux.push(`/device/view_templates/info/views?id=${record.id}&&name=${record.name}`));
-        }
-        if (e.key === 'sensors') {
-          dispatch(routerRedux.push(`/device/view_templates/info/sensors?id=${record.id}&&name=${record.name}`));
-
-        }
-        if (e.key === 'configs') {
-          dispatch(routerRedux.push(`/device/view_templates/info/configs?id=${record.id}&&name=${record.name}`));
-
-        }
-      }}>
-        <Menu.Item key="edit">
-          编辑
-        </Menu.Item>
-        <Menu.Item key="configs">
-          设备配置
-        </Menu.Item>
-        <Menu.Item key="sensors">
-          传感器列表
-        </Menu.Item>
-        <Menu.Item key="view">
-          设备视图
-        </Menu.Item>
-        <Menu.Item key="mqtt">
-          MQTT信息
-        </Menu.Item>
-        <Menu.Item key="delete">
-          删除
-        </Menu.Item>
-      </Menu>
-    );
     const columns = [
       {
         title: '模板名称',
         dataIndex: 'name',
       },
       {
+        title: '可选数据单位',
+        dataIndex: 'optional_data_units',
+        render: (text, record) => {
+          return text.join(' | ')
+        }
+      },
+      {
         title: '操作',
         render: (text, record) => (
           <Fragment>
             {/*<a onClick={() => this.handleUpdateModalVisible(true, record)}>配置</a>*/}
-            <Link to={`/device/view_templates/add_or_edit?id=${record.id}`}>编辑</Link>
+            <Link to={`/views/view_templates/add_or_edit?id=${record.id}`}>编辑</Link>
             <Divider type="vertical"/>
             <a href="javascript:;" onClick={()=>{
               Modal.confirm({
@@ -336,7 +284,7 @@ class TableList extends PureComponent {
 
           <div className={styles.tableList}>
             <div className={styles.tableListOperator}>
-              <Button icon="plus" type="primary" onClick={() =>  dispatch(routerRedux.push(`/device/view_templates/add_or_edit?id=add`))}>
+              <Button icon="plus" type="primary" onClick={() =>  dispatch(routerRedux.push(`/views/view_templates/add_or_edit?id=add`))}>
                 新建视图模板
               </Button>
             </div>

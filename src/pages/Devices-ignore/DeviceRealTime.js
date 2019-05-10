@@ -1,19 +1,24 @@
 import React, {PureComponent} from 'react';
 import moment from 'moment';
 import {connect} from 'dva';
-import {Row, Col, Form, Card, Select, Input, Table, Alert, Tabs, Transfer, Tooltip} from 'antd';
+import {Row, Col, Form, Card, Select, Input, Table, Alert, Tabs, Checkbox, Tooltip} from 'antd';
 import {Collapse, Button} from 'antd';
 import {routerRedux} from 'dva/router';
+import request from '@/utils/request';
+import find from 'lodash/find';
+import findIndex from 'lodash/findIndex';
 const TabPane = Tabs.TabPane;
 const Panel = Collapse.Panel;
-
+const CheckboxGroup = Checkbox.Group;
 const {Option} = Select;
 const FormItem = Form.Item;
 
 /* eslint react/no-array-index-key: 0 */
 
-@connect(({device_real_data}) => ({
+@connect(({device_real_data,system_configs,views}) => ({
   device_real_data,
+  system_configs,
+  views
 }))
 class CoverCardList extends PureComponent {
   constructor(props) {
@@ -27,13 +32,70 @@ class CoverCardList extends PureComponent {
       showVisible: false,
       targetKeys: [],
       selectedKeys: [],
+      refresh_second:0,
+      display_rows:0,
+      sensor_numbers:[],
+      views:[],
+      views_ids:[],
+      indeterminate: false,
+      checkAll: false,
     }
   }
 
   componentDidMount() {
     const that=this;
-    this.handleSearch()
-    window.addEventListener('resize', this.resizeChart)
+    window.addEventListener('resize', this.resizeChart);
+    const {dispatch} = this.props;
+    request(`/devices/${this.props.history.location.query.id}`, {
+      method: 'GET',
+    }).then((response)=> {
+      if (response.status === 200) {
+        const device_type_id=response.data.data.device_type_id
+        dispatch({
+          type: 'views/fetch',
+          payload: {
+            device_types_id:device_type_id
+          },
+          callback:()=>{
+            const {views} =this.props
+            let viewOptions=[]
+            for(let i=0;i<views.data.length;i++){
+              viewOptions.push({label:views.data[i].name,value:views.data[i].id})
+            }
+            that.setState({
+              views:viewOptions
+            })
+          }
+        });
+      }
+    })
+
+    dispatch({
+      type: 'system_configs/fetch',
+      payload: {
+
+      },
+      callback:()=>{
+        const {system_configs}=that.props
+        const refresh_second=find(system_configs.data,function (o) {
+          return o.key==='real_time_data_refresh_time'
+        })
+        const display_rows=find(system_configs.data,function (o) {
+          return o.key==='real_time_data_display_rows'
+        })
+        console.log('refresh_second',refresh_second)
+
+        if(refresh_second){
+          that.setState({
+            refresh_second:Number(refresh_second.value),
+            display_rows:Number(display_rows.value)
+          },function () {
+            that.handleSearch()
+          })
+        }
+      }
+    });
+
   }
   dynamic=(data)=>{
     console.log('dynamic data',data)
@@ -44,72 +106,87 @@ class CoverCardList extends PureComponent {
     setTimeout(function () {
 
       for (let i = 0; i < data.length; i++) {
+        if(data[i].columns.length){
+          let colors =['#c23531','#2f4554', '#61a0a8', '#d48265', '#91c7ae','#749f83',  '#ca8622', '#bda29a','#6e7074', '#546570', '#c4ccd3']
+          that['myChart' + i] = that.echarts.init(document.querySelector(`.real_time_chart_${i}`));
+          that.myChart.push(that['myChart' + i]);
+          let legend=[];
+          let yAxis=[];
+          let dataSource=[];
+          let series=[]
+          let date=[]
 
-        that['myChart' + i] = that.echarts.init(document.querySelector(`.real_time_chart_${i}`));
-        that.myChart.push(that['myChart' + i]);
-        let legend=[];
-        let yAxis=[];
-        let dataSource=[];
-        let series=[]
-        let date=[]
-        for(let j=0;j<data[i].columns.length;j++){
-          legend.push(data[i].columns[j].name);
-          yAxis.push({
-            type: 'value',
-            offset:j>1?30*(j-1):0,
-            name:  data[i].columns[j].name + `${data[i].columns[j].data_unit ? '(' + data[i].columns[j].data_unit + ')' : ''}`,
-          });
-
-          series.push({
-            name: data[i].columns[j].name,
-            type: 'line',
-            data:  data[i].columns[j].data.reduce((pre,item)=>{pre.push(item.value);return pre},[]).reverse(),
-            yAxisIndex: j,
-
-            smooth: true,
-          });
-          dataSource.push({
-            [ data[i].columns[j].name]:data[i].columns[j].data
-          })
-        }
-        let parseData=that.transformData(dataSource);
-        for (let i=0;i<parseData.length;i++){
-          if(parseData[i] instanceof Array){
-            parseData=parseData[0]
+          for(let j=0;j<data[i].columns.length;j++){
+            legend.push(data[i].columns[j].name);
+            // yAxis.push({
+            //   type: 'value',
+            //   offset:j>1?30*(j-1):0,
+            //   name:  data[i].columns[j].name ,
+            //   axisLine: {
+            //     lineStyle: {
+            //       color: colors[(j%data[i].columns.length)]
+            //     }
+            //   },
+            // });
+            const unitExit=find(yAxis,(o)=>{return o.name===data[i].columns[j].data_unit})
+            if(!unitExit){
+              yAxis.push({
+                type: 'value',
+                name:  data[i].columns[j].data_unit ,
+              });
+            }
+            series.push({
+              name: data[i].columns[j].name,
+              type: 'line',
+              data:  data[i].columns[j].data.reduce((pre,item)=>{pre.push(item.value);return pre},[]).reverse(),
+              yAxisIndex: findIndex(yAxis,(o)=>{return o.name===data[i].columns[j].data_unit}),
+              smooth: true,
+            });
+            dataSource.push({
+              [ data[i].columns[j].name]:data[i].columns[j].data
+            })
           }
-        }
-        // console.log('legend',legend)
-        // console.log('yAxis',yAxis)
-        // console.log('parseData',parseData);
-        for(let k=0;k<parseData.length;k++){
-          date.push( moment(parseData[k].timestamp).format('MM-DD HH:mm:ss'))
-        }
-        // console.log('date',date)
-        let option = {
-          backgroundColor: '#eee',
-          tooltip: {
-            trigger: 'axis'
-          },
+          let parseData=that.transformData(dataSource);
+          for (let i=0;i<parseData.length;i++){
+            if(parseData[i] instanceof Array){
+              parseData=parseData[0]
+            }
+          }
+          // console.log('legend',legend)
+          // console.log('yAxis',yAxis)
+          // console.log('parseData',parseData);
+          for(let k=0;k<parseData.length;k++){
+            date.push( moment(parseData[k].timestamp).format('HH:mm:ss'))
+          }
+          // console.log('date',date)
+          let option = {
+            color: colors,
+            backgroundColor: '#eee',
+            tooltip: {
+              trigger: 'axis',
+            },
 
-          legend: {
-            data: legend
-          },
-          xAxis: {
-            type: 'category',
-            boundaryGap: false,
-            data: [...date].reverse()
-          },
-          yAxis: yAxis,
-          grid: {
-            top: '20%',
-            left: '3%',
-            right: '5%',
-            bottom: '1%',
-            containLabel: true
-          },
-          series: series
-        };
-        that['myChart' + i].setOption(option);
+            legend: {
+              data: legend
+            },
+            xAxis: {
+              type: 'category',
+              boundaryGap: false,
+              data: [...date].reverse()
+            },
+            yAxis: yAxis,
+            grid: {
+              top: '20%',
+              left: '3%',
+              right: '3%',
+              bottom: '1%',
+              containLabel: true
+            },
+            series: series
+          };
+          that['myChart' + i].setOption(option,true);
+        }
+
       }
     }, 400)
   }
@@ -127,7 +204,8 @@ class CoverCardList extends PureComponent {
     dispatch({
       type: 'device_real_data/fetch',
       payload: {
-        device_id: that.props.history.location.query.id
+        device_id: that.props.history.location.query.id,
+        view_ids:that.state.views_ids
       },
       callback: function () {
         const {
@@ -139,24 +217,10 @@ class CoverCardList extends PureComponent {
         }
         that.timer=setTimeout(function () {
           that.handleSearch();
-        },5000)
+        },that.state.refresh_second*1000)
       }
 
     });
-  }
-  handleChange = (nextTargetKeys, direction, moveKeys) => {
-    this.setState({targetKeys: nextTargetKeys});
-
-    console.log('targetKeys: ', nextTargetKeys);
-    console.log('direction: ', direction);
-    console.log('moveKeys: ', moveKeys);
-  }
-
-  handleSelectChange = (sourceSelectedKeys, targetSelectedKeys) => {
-    this.setState({selectedKeys: [...sourceSelectedKeys, ...targetSelectedKeys]});
-
-    console.log('sourceSelectedKeys: ', sourceSelectedKeys);
-    console.log('targetSelectedKeys: ', targetSelectedKeys);
   }
 
   resizeChart = ()=> {
@@ -167,6 +231,9 @@ class CoverCardList extends PureComponent {
     }
   }
   transformData = (original)=> {
+    if(original.length===0){
+      return []
+    }
     const mapOriginal = original
       .map(item => Object.keys(item).map(category => item[category].map(categoryData => ({
         ...categoryData,
@@ -191,11 +258,40 @@ class CoverCardList extends PureComponent {
       return item
     })
   }
-
+  onChange=(checkedList)=>{
+    this.setState({
+      views_ids:checkedList,
+      indeterminate: !!checkedList.length && (checkedList.length < this.state.views.length),
+      checkAll: checkedList.length === this.state.views.length,
+    },function () {
+      // if (this.myChart.length>0) {
+      //   for (let i = 0; i < this.myChart.length; i++) {
+      //     this.myChart[i].clear();
+      //   }
+      // }
+      this.handleSearch();
+    });
+  }
+  onCheckAllChange = (e) => {
+    this.setState({
+      views_ids: e.target.checked ? this.state.views.reduce((pre,item)=>{pre.push(item.value);return pre},[]) : [],
+      indeterminate: false,
+      checkAll: e.target.checked,
+    },function () {
+      // if (this.myChart.length>0) {
+      //   for (let i = 0; i < this.myChart.length; i++) {
+      //     this.myChart[i].clear();
+      //   }
+      // }
+      this.handleSearch();
+    });
+  }
   render() {
     const {
       device_real_data: {data, loading},
+      system_configs
     } = this.props;
+
     const renderItem = data.map((item, index)=> {
       const columns = [{
         title: '时间',
@@ -236,7 +332,7 @@ class CoverCardList extends PureComponent {
           data=data[0]
         }
       }
-      return <Col key={index} xxl={12} xl={24} lg={24} md={24} sm={24} xs={24} style={{marginBottom: 16}}>
+      return <Col key={index} xxl={24} xl={24} lg={24} md={24} sm={24} xs={24} style={{marginBottom: 16}}>
         <Card
           hoverable={true}
           size="small"
@@ -258,7 +354,18 @@ class CoverCardList extends PureComponent {
       <div>
         <Card bordered={false} style={{marginTop: '24px'}}>
           <div><Row  gutter={12}>
-            <Alert style={{margin:'6px'}} message="数据每隔5秒刷新一次" type="info"  />
+            <Alert style={{margin:'6px'}} message={`数据每隔${this.state.refresh_second}秒刷新一次; 显示最新${this.state.display_rows}条数据`} type="info"  />
+            <div  style={{margin:'6px',paddingBottom:'12px',marginBottom:'12px',borderBottom: '1px solid #E9E9E9'}}>
+              <Checkbox
+                indeterminate={this.state.indeterminate}
+                onChange={this.onCheckAllChange}
+                checked={this.state.checkAll}
+              >
+                选择全部
+              </Checkbox>
+              <br />
+              <CheckboxGroup options={this.state.views} value={this.state.views_ids} onChange={this.onChange} />
+            </div>
             {renderItem}
           </Row></div>
 

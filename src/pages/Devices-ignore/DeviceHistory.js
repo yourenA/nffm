@@ -1,7 +1,7 @@
 import React, {PureComponent} from 'react';
 import moment from 'moment';
 import {connect} from 'dva';
-import {Row, Col, Form, Card, Select, Tabs, Table, DatePicker, Divider, Transfer, Tooltip} from 'antd';
+import {Row, Col, Form, Card, Select, Tabs, Table, DatePicker, Divider, Checkbox, Tooltip} from 'antd';
 import {Collapse, Button} from 'antd';
 import {routerRedux} from 'dva/router';
 import request from '@/utils/request';
@@ -9,6 +9,8 @@ const Panel = Collapse.Panel;
 const TabPane = Tabs.TabPane;
 const {Option} = Select;
 const FormItem = Form.Item;
+const CheckboxGroup = Checkbox.Group;
+
 
 /* eslint react/no-array-index-key: 0 */
 
@@ -28,7 +30,10 @@ class CoverCardList extends PureComponent {
       selectedKeys: [],
       date: moment(new Date(), 'YYYY-MM-DD'),
       sensor_numbers:[],
-      sensors:[]
+      sensors:[],
+      checkedList:[],
+      indeterminate: false,
+      checkAll: false,
     }
   }
 
@@ -58,7 +63,7 @@ class CoverCardList extends PureComponent {
         let series=[{
           name: data[i].alias,
           type: 'line',
-          data:  data[i].data.reduce((pre,item)=>{pre.push(item.value);return pre},[]),
+          data:  data[i].data.reduce((pre,item)=>{pre.push(item.value);return pre},[]).reverse(),
           smooth: true,
         }]
         let date=[]
@@ -128,20 +133,23 @@ class CoverCardList extends PureComponent {
 
     });
   }
-  handleChange=(value)=>{
+  handleChangeDate=(value)=>{
     console.log('value',value)
-    this.setState({
-      sensor_numbers:value
-    },function () {
-      this.handleSearch();
-    })
-  }
-  onChange=(value, dateString)=>{
     this.setState({
       date:value
     },function () {
       this.handleSearch();
     })
+  }
+  onChange=(checkedList)=>{
+    console.log('checkedList',checkedList)
+    this.setState({
+      sensor_numbers:checkedList,
+      indeterminate: !!checkedList.length && (checkedList.length < this.state.sensors.length),
+      checkAll: checkedList.length === this.state.sensors.length,
+    },function () {
+      this.handleSearch();
+    });
   }
   handleSearchSensors = ( cb) => {
     const that = this;
@@ -153,8 +161,12 @@ class CoverCardList extends PureComponent {
       method: 'GET',
     }).then((response)=> {
       if (response.status === 200) {
+        let channels=[]
+        for(let i=0;i<response.data.data.channels.length;i++){
+          channels.push({label:response.data.data.channels[i].name,value:response.data.data.channels[i].id})
+        }
         that.setState({
-          sensors:response.data.data.channels
+          sensors:channels
         })
       }
     })
@@ -165,6 +177,15 @@ class CoverCardList extends PureComponent {
         this.myChart[i].resize();
       }
     }
+  }
+  onCheckAllChange = (e) => {
+    this.setState({
+      sensor_numbers: e.target.checked ? this.state.sensors.reduce((pre,item)=>{pre.push(item.value);return pre},[]) : [],
+      indeterminate: false,
+      checkAll: e.target.checked,
+    },function () {
+      this.handleSearch();
+    });
   }
 
   render() {
@@ -181,7 +202,7 @@ class CoverCardList extends PureComponent {
       }
       },
         {
-          title: <Tooltip title={item.remark + `${item.data_unit ? '(' + item.data_unit + ')' : ''}`}>
+          title: <Tooltip title={item.alias + `${item.data_unit ? '(' + item.data_unit + ')' : ''}`}>
             <span>{item.name + `${item.data_unit ? '(' + item.data_unit + ')' : ''}`}</span>
           </Tooltip> ,
           dataIndex: item.name,
@@ -193,7 +214,7 @@ class CoverCardList extends PureComponent {
           ...item.data[i]
         })
       }
-      return <Col key={index} xxl={12} xl={24} lg={24} md={24} sm={24} xs={24} style={{marginBottom: 16}}>
+      return <Col key={index} xxl={24} xl={24} lg={24} md={24} sm={24} xs={24} style={{marginBottom: 16}}>
         <Card
           hoverable={true}
           size="small"
@@ -203,38 +224,38 @@ class CoverCardList extends PureComponent {
           bodyStyle={{
           }}
           title={
-            <h3 style={{marginBottom:'0'}}>{ item.alias}</h3>
+            <h3 style={{marginBottom:'0'}}>{ `${item.name}(${item.alias})`}</h3>
 
           }
         >
           <div style={{width: '100%', height: '200px'}} className={`history_chart_${index}`}></div>
-          <Table size="small" rowKey="timestamp"  scroll={{ y: 140 }} columns={columns} dataSource={[...dataSource]} bordered={true} pagination={false}/>
+       {/*   <Table size="small" rowKey="timestamp"  scroll={{ y: 140 }} columns={columns} dataSource={[...dataSource]} bordered={true} pagination={false}/>*/}
         </Card>
       </Col>
     })
     return (
       <div>
         <Card bordered={false} style={{marginTop: '24px'}}>
-          <div style={{marginTop:'12px',marginBottom:'12px',display:'flex'}}>
-            <div>
+          <div style={{marginTop:'12px',marginBottom:'12px'}}>
+            <div  style={{paddingBottom:'12px',marginBottom:'12px',borderBottom: '1px solid #E9E9E9'}}>
+              <Checkbox
+                indeterminate={this.state.indeterminate}
+                onChange={this.onCheckAllChange}
+                checked={this.state.checkAll}
+              >
+                选择全部
+              </Checkbox>
+              <br />
+            <CheckboxGroup options={this.state.sensors} value={this.state.sensor_numbers} onChange={this.onChange} />
+            </div>
+            <div >
               日期: <DatePicker
               format="YYYY-MM-DD"
-              onChange={this.onChange}
-              onOk={this.onOk}
+              onChange={this.handleChangeDate}
               value={this.state.date}
               style={{marginRight:'12px'}}
               allowClear={false}
             />
-              传感器: &nbsp;
-            </div>
-            <div style={{flex:1}}>
-               <Select value={this.state.sensor_numbers}  mode="multiple" style={{ width: '100%' }}  allowClear={true}  onChange={this.handleChange}>
-              {
-                this.state.sensors.map((item,index)=>{
-                  return  <Option key={item.id} value={item.id} >{item.number} </Option>
-                })
-              }
-            </Select>
             </div>
 
           </div>

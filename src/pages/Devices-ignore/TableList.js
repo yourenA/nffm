@@ -27,7 +27,7 @@ import {
 } from 'antd';
 import DescriptionList from '@/components/DescriptionList';
 import styles from './TableList.less';
-import AddOrEditDevice from './AddOrEditDevice'
+import AddOrEditDevice from './AddOrEditDevice2'
 const FormItem = Form.Item;
 const {Step} = Steps;
 const {TextArea} = Input;
@@ -66,17 +66,32 @@ class TableList extends PureComponent {
 
 
   componentDidMount() {
-    const {dispatch} = this.props;
-    dispatch({
-      type: 'devices/fetch',
-      payload: {
+    if (this.props.location.search) {
+      const search = this.props.location.search.substring(1);
+      const searchArr = search.split("&");
+      let params = {}
+      for (let i = 0; i < searchArr.length; i++) {
+        var tmp_arr = searchArr[i].split("=");
+
+        if (tmp_arr[0] === 'page'||tmp_arr[0] === 'page') {
+          params[tmp_arr[0]]=Number(tmp_arr[1])
+
+        }else{
+          params[tmp_arr[0]]=decodeURI(tmp_arr[1])
+          this.props.form.setFieldsValue({[tmp_arr[0]]:decodeURI(tmp_arr[1])})
+        }
+      }
+      console.log('params', params)
+      this.handleSearch(params)
+    }else{
+      this.handleSearch({
         page: 1,
         per_page: 30,
         number: '',
         name: '',
-      },
+      })
+    }
 
-    });
   }
 
   handleMenuClick = e => {
@@ -103,27 +118,6 @@ class TableList extends PureComponent {
     }
   };
 
-
-  handleModalVisible = flag => {
-    this.setState({
-      addModal: !!flag,
-    });
-  };
-  setStep = (step)=> {
-    this.setState({
-      current: step
-    })
-  }
-  setStepData = (data, step)=> {
-    // console.log('data',data)
-    this.setState({
-      stepData: data
-    }, function () {
-      console.log('setStepData', this.state.stepData)
-      this.setStep(step)
-    })
-  }
-
   handleSearch = (values, cb) => {
     console.log('handleSearch', values)
     const that = this;
@@ -137,6 +131,9 @@ class TableList extends PureComponent {
         console.log('handleSearch callback')
         that.setState({
           ...values,
+        },function () {
+          dispatch(routerRedux.replace(`/device/devices/list?name=${encodeURI(this.state.name)}&number=${encodeURI(this.state.number)}&page=${this.state.page}&per_page=${this.state.per_page}`)
+          )
         });
         if (cb) cb()
       }
@@ -183,7 +180,8 @@ class TableList extends PureComponent {
                   this.handleSearch({
                     page: this.state.page,
                     per_page: this.state.per_page,
-                    ...values,
+                    name: values.name?values.name:'',
+                    number: values.number?values.number:'',
                   })
 
                 });
@@ -270,7 +268,6 @@ class TableList extends PureComponent {
       type: 'devices/add',
       payload: {
         ...formValues,
-        template_id: formValues.template_id ? formValues.template_id.key : ''
       },
       callback: function () {
         message.success('新建设备成功')
@@ -322,7 +319,11 @@ class TableList extends PureComponent {
           })
         }
         if (e.key === 'edit') {
-          dispatch(routerRedux.push(`/device/devices/add_or_edit?id=${record.id}`))
+         // dispatch(routerRedux.push(`/device/devices/add_or_edit?id=${record.id}`))
+          this.setState({
+            editRecord:record,
+            editModal:true
+          })
         }
         if (e.key === 'mqtt') {
           this.getMqttInfo(record.id)
@@ -330,29 +331,28 @@ class TableList extends PureComponent {
         if (e.key === 'view') {
           dispatch(routerRedux.push(`/device/devices/info/views?id=${record.id}&&name=${record.name}`));
         }
-        if (e.key === 'sensors') {
-          dispatch(routerRedux.push(`/device/devices/info/sensors?id=${record.id}&&name=${record.name}`));
+        if (e.key === 'history') {
+          dispatch(routerRedux.push(`/device/devices/info/history?id=${record.id}&&name=${record.name}`));
 
         }
         if (e.key === 'configs') {
           dispatch(routerRedux.push(`/device/devices/info/configs?id=${record.id}&&name=${record.name}`));
-
+        }
+        if (e.key === 'info') {
+          dispatch(routerRedux.push(`/device/devices/info/information?id=${record.id}&&name=${record.name}`));
         }
       }}>
-        <Menu.Item key="edit">
-          编辑
+        <Menu.Item key="history">
+          历史数据
         </Menu.Item>
         <Menu.Item key="configs">
           设备配置
         </Menu.Item>
-        <Menu.Item key="sensors">
-          传感器列表
+        <Menu.Item key="info">
+          设备信息
         </Menu.Item>
-        <Menu.Item key="view">
-          设备视图
-        </Menu.Item>
-        <Menu.Item key="mqtt">
-          MQTT信息
+        <Menu.Item key="edit">
+          编辑
         </Menu.Item>
         <Menu.Item key="delete">
           删除
@@ -398,9 +398,9 @@ class TableList extends PureComponent {
         render: (text, record) => (
           <Fragment>
             {/*<a onClick={() => this.handleUpdateModalVisible(true, record)}>配置</a>*/}
-            <Link to={`/device/devices/info/real_time?id=${record.id}&&name=${record.name}`}>实时数据</Link>
+            <Link to={`/device/devices/info/sensors?id=${record.id}&&name=${record.name}`}>数据采集</Link>
             <Divider type="vertical"/>
-            <Link to={`/device/devices/info/history?id=${record.id}&&name=${record.name}`}>历史数据</Link>
+            <Link to={`/device/devices/info/real_time?id=${record.id}&&name=${record.name}`}>实时数据</Link>
             <Divider type="vertical"/>
             <Link to={`/device/devices/info/valves?id=${record.id}&&name=${record.name}`}>阀门控制</Link>
             <Divider type="vertical"/>
@@ -418,10 +418,10 @@ class TableList extends PureComponent {
       total: meta.total,
       current: this.state.page,
       onChange: (page, pageSize)=> {
-        this.handleSearch({page, per_page: pageSize})
+        this.handleSearch({page, per_page: pageSize,name:this.state.name,number:this.state.number})
       },
       onShowSizeChange: (page, pageSize)=> {
-        this.handleSearch({page, per_page: pageSize})
+        this.handleSearch({page, per_page: pageSize,name:this.state.name,number:this.state.number})
       },
     };
     return (
@@ -431,35 +431,22 @@ class TableList extends PureComponent {
             <div className={styles.tableListForm}>{this.renderForm()}</div>
             <div className={styles.tableListOperator}>
               <Button icon="plus" type="primary" onClick={
-                ()=>{dispatch(routerRedux.push(`/device/devices/add_or_edit?id=add`));}
+                ()=>{this.setState({
+                  addModal:true
+                })}
               }>
                 新建设备
               </Button>
             </div>
             <Table
-              className={styles.whiteBg}
+              className="custom-small-table"
               loading={loading}
               rowKey={'id'}
               dataSource={data}
               columns={columns}
-              size="large"
               pagination={paginationProps}
             />
           </div>
-          <Modal
-            title={'编辑' + this.state.editRecord.number }
-            destroyOnClose
-            visible={this.state.editModal}
-            centered
-            onOk={this.handleEdit}
-            onCancel={()=> {
-              this.setState({editModal: false, editRecord: {}})
-            }}
-          >
-            <AddOrEditDevice editRecord={this.state.editRecord}
-                             wrappedComponentRef={(inst) => this.EditDevice = inst}/>
-
-          </Modal>
           <Modal
             title={this.state.editRecord.number + '详情'}
             destroyOnClose
@@ -507,12 +494,13 @@ class TableList extends PureComponent {
               </DescriptionList>
               {
                 this.state.mqttInfo.topics && this.state.mqttInfo.topics.map((item, index)=> {
+
                   return(
                     <div style={{marginTop:'10px'}} key={index}>
                       <DescriptionList className={styles.headerList} size="small" col="3" >
                         <Description term="主题名称"> {item.name}</Description>
-                        <Description term="是否允许发布"> {item.allow_publish === '1' ? '是' : '否'}</Description>
-                        <Description term="是否允许订阅"> {item.allow_subscribe === '1' ? '是' : '否'}</Description>
+                        <Description term="是否允许发布"> {item.allow_publish === 1 ? '是' : '否'}</Description>
+                        <Description term="是否允许订阅"> {item.allow_subscribe === 1 ? '是' : '否'}</Description>
                       </DescriptionList>
                     </div>
 
@@ -526,7 +514,6 @@ class TableList extends PureComponent {
             title={'新建设备'}
             visible={this.state.addModal}
             centered
-            width={600}
             onCancel={()=> {
               this.setState({addModal: false})
             }}
@@ -534,6 +521,20 @@ class TableList extends PureComponent {
           >
             <AddOrEditDevice
               wrappedComponentRef={(inst) => this.AddDevice = inst}/>
+
+          </Modal>
+          <Modal
+            title={'编辑' + this.state.editRecord.number }
+            destroyOnClose
+            visible={this.state.editModal}
+            centered
+            onOk={this.handleEdit}
+            onCancel={()=> {
+              this.setState({editModal: false, editRecord: {}})
+            }}
+          >
+            <AddOrEditDevice editRecord={this.state.editRecord}
+                             wrappedComponentRef={(inst) => this.EditDevice = inst}/>
 
           </Modal>
         </Card>

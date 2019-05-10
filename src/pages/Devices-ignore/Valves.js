@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import styles from './valves.less';
 import { connect } from 'dva';
-import { Alert,Badge,InputNumber,Select,Card,Button,List ,message,Collapse,Switch   } from 'antd';
+import { Alert,Badge,InputNumber,Select,Card,Button,List ,message,Collapse,Switch ,Form ,Icon  } from 'antd';
 import DescriptionList from '@/components/DescriptionList';
 import findIndex from 'lodash/findIndex';
 const Panel = Collapse.Panel;
@@ -18,7 +18,13 @@ class SearchList extends Component {
     this.state = {
       editRecord:{},
       mode:'1',
-      valves:[]
+      valves:[],
+      over_rate:120,
+      over_recover_rate:110,
+      under_recover_rate:90,
+      under_rate:80,
+      channels:[],
+      channel:''
     };
   }
 
@@ -53,6 +59,8 @@ class SearchList extends Component {
           under:data.under,
           under_recover:data.under_recover,
           valves:valves,
+          channels:data.optional_channels,
+          channel:data.channel_number,
           showEdit:true
         })
       }
@@ -67,6 +75,7 @@ class SearchList extends Component {
       sendData.over_recover=Number(this.state.over_recover)
       sendData.under=Number(this.state.under)
       sendData.under_recover=Number(this.state.under_recover)
+      sendData.channel_number=this.state.channel
     }else if(this.state.mode==='1'){
       sendData.valves=[]
       for(let i=0;i<this.state.valves.length;i++){
@@ -95,7 +104,7 @@ class SearchList extends Component {
     this.setState({
       [mode]:e
     })
-    console.log(e)
+    // console.log(e)
   }
   handleChangeValve=(valves,e)=>{
     console.log(valves,e);
@@ -118,7 +127,7 @@ class SearchList extends Component {
       <div>
         <Card style={{marginTop:'24px'}}>
           <Collapse activeKey={['1']}>
-            <Panel showArrow={false} header={<div>当前策略</div>} key="1"
+            <Panel showArrow={false} header={<div><Icon type="box-plot" /> 当前策略</div>} key="1"
             >
               <div style={{marginBottom:'10px'}}>
                 <DescriptionList  size="small" col="4" >
@@ -128,6 +137,9 @@ class SearchList extends Component {
               {
                 data.mode===2&&
                 <div style={{marginBottom:'10px'}}>
+                  <DescriptionList  size="small" col="4" >
+                    <Description term="当前通道">  {data.channel_number}</Description>
+                  </DescriptionList>
                   <DescriptionList  size="small" col="4" >
                     <Description term="over"> {data.over} Mpa</Description>
                     <Description term="over_recover"> {data.over_recover} Mpa</Description>
@@ -158,26 +170,139 @@ class SearchList extends Component {
           {
             this.state.showEdit&&
             <Collapse activeKey={['2']} className={styles.valve_panel} style={{marginTop:'15'}}>
-              <Panel  showArrow={false} header={<div>修改策略</div>} key="2"
+              <Panel  showArrow={false} header={<div><Icon type="sliders" /> 修改策略</div>} key="2"
               >
                 <div style={{marginBottom:'10px'}}>
-                  <DescriptionList  size="small" col="4" >
-                    <Description term="模式">
+                  <Form layout={'inline'}>
+                    <Form.Item
+                      label="模式"
+                    >
                       <Select   value={this.state.mode.toString()} style={{ width: 120 }} onChange={this.handleChangeMode}>
                         <Option value="1">手动</Option>
                         <Option value="2">自动</Option>
                       </Select>
-                    </Description>
-                  </DescriptionList>
+                    </Form.Item>
+                    {
+                      this.state.mode === '2' && <Form.Item
+                        label="通道"
+                      >
+                        <Select value={this.state.channel}  style={{width: 150}}
+                                onChange={(e)=>{
+                                  this.setState({
+                                    channel:e
+                                  })
+                                }
+                                }>
+                          {this.state.channels.map((item,index)=>{
+                            return <Option key={index} value={item.number}>{item.display_name}</Option>
+                          })}
+                        </Select>
+                      </Form.Item>
+                    }
+                    </Form>
+
                 </div>
                 {
                   this.state.mode==='2'&&
                   <div  style={{marginBottom:'10px'}}>
                     <Alert message="over必须大于overRecover，overRecover必须大于underRecover，underRecover必须大于 under" type="info"   style={{marginBottom:'10px'}} />
-                    <DescriptionList  size="small" col="4" >
-                      <Description term="over"> <InputNumber style={{width:'60px'}} onChange={(e)=>{
-                        this.changeAuto('over',e)
-                      }} defaultValue={data.over}/> Mpa</Description>
+                    <h3>自动填充数据:</h3>
+                    <div  style={{marginBottom:'8px'}}>
+                      自动数值 : <InputNumber  onChange={(e)=>{
+                        this.setState({
+                          autoData:e
+                        })
+                    }} />
+                      <Button type='primary' style={{marginLeft:'10px'}} onClick={()=>{
+                        this.setState({
+                          over:(this.state.autoData*(this.state.over_rate/100)).toFixed(2),
+                          over_recover:(this.state.autoData*(this.state.over_recover_rate/100)).toFixed(2),
+                          under_recover:(this.state.autoData*(this.state.under_recover_rate/100)).toFixed(2),
+                          under:(this.state.autoData*(this.state.under_rate/100)).toFixed(2),
+                        })
+                      }}>计算</Button>
+                    </div>
+
+                    <Form layout={'inline'}>
+                      <Form.Item
+                        label="over比例"
+                      >
+                        <InputNumber
+                          formatter={value => `${value}%`}
+                          parser={value => value.replace('%', '')}
+                          onChange={(e)=>{
+                          this.changeAuto('over_rate',e)
+                        }} value={this.state.over_rate} />
+                      </Form.Item>
+                      <Form.Item
+                        label="overRecover比例"
+                      >
+                        <InputNumber
+                          formatter={value => `${value}%`}
+                          parser={value => value.replace('%', '')}
+                          onChange={(e)=>{
+                          this.changeAuto('over_recover_rate',e)
+                        }} value={this.state.over_recover_rate} />
+                      </Form.Item>
+                      <Form.Item
+                        label="underRecover比例"
+                      >
+                        <InputNumber
+                          formatter={value => `${value}%`}
+                          parser={value => value.replace('%', '')}
+                          onChange={(e)=>{
+                          this.changeAuto("under_recover_rate",e)
+                        }}  value={this.state.under_recover_rate}  />
+                      </Form.Item>
+                      <Form.Item
+                        label="under比例"
+                      >
+                        <InputNumber
+                          formatter={value => `${value}%`}
+                          parser={value => value.replace('%', '')}
+                          onChange={(e)=>{
+                          this.changeAuto('under_rate',e)
+                        }} value={this.state.under_rate} />
+                      </Form.Item>
+
+                    </Form>
+                    <Form layout={'inline'}>
+                      <Form.Item
+                        label="over"
+                      >
+                        <InputNumber  onChange={(e)=>{
+                          this.changeAuto('over',e)
+                        }} value={this.state.over} defaultValue={data.over}/> Mpa
+                      </Form.Item>
+                      <Form.Item
+                        label="overRecover"
+                      >
+                        <InputNumber   onChange={(e)=>{
+                          this.changeAuto('over_recover',e)
+                        }} value={this.state.over_recover} defaultValue={data.over_recover}/> Mpa
+                      </Form.Item>
+                      <Form.Item
+                        label="underRecover"
+                      >
+                        <InputNumber   onChange={(e)=>{
+                          this.changeAuto("under_recover",e)
+                        }}  value={this.state.under_recover}  defaultValue={data.under_recover}/> Mpa
+                      </Form.Item>
+                      <Form.Item
+                        label="under"
+                      >
+                        <InputNumber  onChange={(e)=>{
+                          this.changeAuto('under',e)
+                        }} value={this.state.under}  defaultValue={data.under}/> Mpa
+                      </Form.Item>
+
+                    </Form>
+             {/*      <DescriptionList  size="small" col="4" >
+                      <Description term="over">
+                  <InputNumber  onChange={(e)=>{
+                  this.changeAuto('over',e)
+                  }} value={this.state.over} defaultValue={data.over}/> Mpa
+                  </Description>
                       <Description term="overRecover">  <InputNumber  style={{width:'60px'}} onChange={(e)=>{
                         this.changeAuto('over_recover',e)
                       }}  defaultValue={data.over_recover}/> Mpa</Description>
@@ -187,7 +312,7 @@ class SearchList extends Component {
                       <Description term="underRecover"> <InputNumber  style={{width:'60px'}} onChange={(e)=>{
                         this.changeAuto("under_recover",e)
                       }}   defaultValue={data.under_recover}/> Mpa</Description>
-                    </DescriptionList>
+                    </DescriptionList>*/}
                   </div>
                 }
                 {
@@ -209,7 +334,7 @@ class SearchList extends Component {
                 <div  style={{overflow:'hidden'}}>
                   <Button type="primary" style={{float:'right'}} onClick={()=>{
                     this.handleEdit()
-                  }}>确定</Button>
+                  }}>修改策略</Button>
 
                 </div>
               </Panel>

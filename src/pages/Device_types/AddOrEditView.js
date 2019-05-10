@@ -25,24 +25,12 @@ class AddPoliciesForm extends Component {
     dispatch({
       type: 'view_templates/fetch',
       payload: {
-
-        return:'all'
       },
-
     });
-    request(`/device_types/${this.props.history.location.query.id}`,{
-      params:{
-        include:'channels',
-      },
-      method:'GET',
-    }).then((response)=>{
-      if(response.status===200){
-        that.setState({
-          channels:response.data.data.channels
-        })
-      }
+    if( this.props.editRecord){
+      this.handleChangeViewTemplate(this.props.editRecord.view_template_id)
+    }
 
-    });
   }
   handleChange = (nextTargetKeys, direction, moveKeys) => {
     this.props.handleChange(nextTargetKeys);
@@ -51,6 +39,24 @@ class AddPoliciesForm extends Component {
 
   handleSelectChange = (sourceSelectedKeys, targetSelectedKeys) => {
     this.props.handleSelectChange(sourceSelectedKeys, targetSelectedKeys) ;
+  }
+  handleChangeViewTemplate=(value)=>{
+    console.log(value)
+    const that=this;
+    request(`/view_optional_channels`,{
+      params:{
+        device_type_id:that.props.history.location.query.id,
+        view_template_id:value
+      },
+      method:'GET',
+    }).then((response)=>{
+      if(response.status===200){
+        that.setState({
+          channels:response.data.data
+        })
+      }
+
+    });
   }
   render() {
     const {
@@ -64,7 +70,7 @@ class AddPoliciesForm extends Component {
       },
       wrapperCol: {
         xs: {span: 24},
-        sm: {span: 19},
+        sm: {span: 17},
       }
     };
 
@@ -88,7 +94,7 @@ class AddPoliciesForm extends Component {
           {getFieldDecorator('view_template_id', {
             initialValue: this.props.editRecord?this.props.editRecord.view_template_id:'',
           })(
-            <Select  >
+            <Select onChange={this.handleChangeViewTemplate} >
               { data.map(item => <Option key={item.id} value={item.id}>{item.name}</Option>) }
             </Select>
           )}
@@ -104,7 +110,9 @@ class AddPoliciesForm extends Component {
             onChange={this.handleChange}
             onSelectChange={this.handleSelectChange}
             rowKey={record => record.number}
-            render={item => item.number}
+            render={item => {
+              return `${item.number}(${item.name}-${item.data_units.join('|')})`
+            }}
           />
         </Form.Item>
       </Form>

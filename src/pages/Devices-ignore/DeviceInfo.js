@@ -4,6 +4,7 @@ import { connect } from 'dva';
 import { routerRedux } from 'dva/router';
 import { PageHeader,Tabs } from 'antd';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
+import request from '@/utils/request';
 const TabPane = Tabs.TabPane;
 @connect()
 class SearchList extends Component {
@@ -14,8 +15,19 @@ class SearchList extends Component {
     const pathname=this.props.history.location.pathname.split('/')
     console.log('pathname',pathname)
     this.state={
-      activeKey:pathname[pathname.length-1]
+      activeKey:pathname[pathname.length-1],
+      number:''
     }
+  }
+  componentDidMount() {
+    const that=this;
+    request(`/devices/${this.id}`, {
+      method: 'GET',
+    }).then((response)=> {
+      that.setState({
+        number:response.data.data.number
+      })
+    })
   }
   handleTabChange = (key) => {
     const { dispatch } = this.props;
@@ -64,14 +76,14 @@ class SearchList extends Component {
       <PageHeader
         style={{ margin: '-24px -24px 0' }}
         onBack={() => this.props.history.goBack()}
-        title={this.name}
+        title={`${this.state.number}(${this.name})`}
       />
         <Tabs activeKey={this.state.activeKey} onChange={this.handleTabChange}  style={{ margin: '0 -24px ' ,background:'#fff',paddingLeft:'24px'}} >
+          <TabPane tab="数据采集" key="sensors"></TabPane>
           <TabPane tab="设备实时数据" key="real_time"></TabPane>
           <TabPane tab="传感器历史数据" key="history"></TabPane>
           <TabPane tab="阀门控制" key="valves"></TabPane>
           <TabPane tab="设备配置" key="configs"></TabPane>
-          <TabPane tab="设备通道" key="sensors"></TabPane>
           <TabPane tab="设备信息" key="information"></TabPane>
         </Tabs>
         {this.props.children}

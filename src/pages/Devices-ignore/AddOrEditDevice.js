@@ -92,7 +92,6 @@ class SearchList extends Component {
           channels: response.data.data.channels
         })
       }
-
     });
   }
   handleSubmit = (e) => {
@@ -198,7 +197,6 @@ class SearchList extends Component {
             return text
           }
         }
-
       },
       {
         title: '是否物理通道',
@@ -206,35 +204,6 @@ class SearchList extends Component {
         render:(text,record)=>{
           return text===-1?<div><Badge status="error" />否</div>:<div><Badge status="success" />是</div>
         }
-      },
-      {
-        title: '数据单位',
-        dataIndex: 'data_unit',
-      },
-      {
-        title: '数据类型',
-        dataIndex: 'data_type',
-        render:(text,record)=>{
-          let data_type = ''
-          switch (text.toString()) {
-            case '1':
-              data_type = '整型';
-              break;
-            case '2':
-              data_type = '浮点型';
-              break;
-            case '3':
-              data_type = '字符型';
-              break;
-            default:
-              break
-          }
-          return data_type
-        }
-      },
-      {
-        title: '保留小数位',
-        dataIndex: 'data_accuracy',
       },
       {
         title: '已接入的传感器型号/名称',

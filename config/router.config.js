@@ -21,18 +21,12 @@ export default [
     component: '../layouts/BasicLayout',
     routes: [
       // dashboard
-      { path: '/', redirect: '/monitor/analysis' },
+      { path: '/', redirect: '/monitor' },
       {
         path: '/monitor',
-        name: '系统整体信息',
+        name: '首页',
         icon: 'home',
-        routes: [
-          {
-            path: '/monitor/analysis',
-            name: '首页',
-            component: './Home/Index',
-          }
-        ],
+        component: './Home/Index',
       },
       {
         path: '/device',
@@ -41,7 +35,7 @@ export default [
         routes: [
           {
             path: '/device/devices',
-            name: '设备管理',
+            name: '设备列表',
             // component: './Forms/StepForm',
             hideChildrenInMenu: true,
             routes: [
@@ -104,20 +98,36 @@ export default [
 
             ],
           },
-
+          // {
+          //   path: '/monitor/map',
+          //   name: '地图信息',
+          //   component: './Monitor/Monitor',
+          // },
+          // {
+          //   path: '/monitor/workplace',
+          //   name: '视频监控',
+          //   component: './Monitor/Workplace',
+          // },
+        ],
+      },
+      {
+        path: '/views',
+        name: '视图管理',
+        icon: 'eye',
+        routes: [
           {
-            path: '/device/device_types',
-            name: '设备类型',
+            path: '/views/device_views',
+            name: '设备视图',
             // component: './Forms/StepForm',
             hideChildrenInMenu: true,
             routes: [
               {
-                path: '/device/device_types',
+                path: '/views/device_views',
                 name: '设备类型',
-                redirect: '/device/device_types/list',
+                redirect: '/views/device_views/list',
               },
               {
-                path: '/device/device_types/list',
+                path: '/views/device_views/list',
                 name: '设备列表',
                 component: './Device_types/Index',
               },
@@ -127,11 +137,11 @@ export default [
               //   component: './Devices-ignore/Sensors',
               // },
               {
-                path: '/device/device_types/info',
+                path: '/views/device_views/info',
                 component: './Device_types/DeviceTypeInfo',
                 routes: [
                   {
-                    path: '/device/device_types/info/views',
+                    path: '/views/device_views/info/views',
                     name: '视图列表',
                     component: './Device_types/Views',
                   },
@@ -141,23 +151,23 @@ export default [
             ],
           },
           {
-            path: '/device/view_templates',
+            path: '/views/view_templates',
             name: '视图模板',
             // component: './Forms/StepForm',
             hideChildrenInMenu: true,
             routes: [
               {
-                path: '/device/view_templates',
+                path: '/views/view_templates',
                 name: '视图模板列表',
-                redirect: '/device/view_templates/list',
+                redirect: '/views/view_templates/list',
               },
               {
-                path: '/device/view_templates/list',
+                path: '/views/view_templates/list',
                 name: '视图模板列表',
                 component: './View_templates/Index',
               },
               {
-                path: '/device/view_templates/add_or_edit',
+                path: '/views/view_templates/add_or_edit',
                 name: '视图模板',
                 component: './View_templates/AddOrEdit',
               },
@@ -174,6 +184,13 @@ export default [
           //   component: './Monitor/Workplace',
           // },
         ],
+
+      },
+      {
+        path: '/system',
+        name: '系统配置',
+        icon: 'setting',
+        component: './Home/SystemConfigs',
       },
       {
         path: '/users',

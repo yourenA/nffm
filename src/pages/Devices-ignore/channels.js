@@ -1,9 +1,10 @@
-import React, {Component} from 'react';
+import React, {Component,Fragment} from 'react';
 import {connect} from 'dva';
 import request from '@/utils/request';
-import {PageHeader, Input, Table, Form, Card, Button, Col, Select, message, Row,Tooltip,Badge} from 'antd';
+import {PageHeader, Input, Table, Form, Card, Button, Col, Select, message, Row,Modal,Badge,Popconfirm,Divider} from 'antd';
 import styles from './TableList.less';
-import findIndex from 'lodash/findIndex'
+import differenceBy from 'lodash/differenceBy'
+import AddChannel from './AddOrEditChannel'
 const FormItem = Form.Item;
 const Option = Select.Option;
 const TextArea = Input.TextArea
@@ -17,12 +18,16 @@ class SearchList extends Component {
     this.state = {
       id: 0,
       channels: [],
-      editChannels:{}
+      editRecord:{},
+      editChannels:{},
+      optionChannel:[]
     }
   }
 
   componentDidMount() {
-    this.fetchCurrent()
+    const that=this;
+    this.fetchCurrent();
+
   }
   fetchCurrent=()=>{
     const that = this;
@@ -32,13 +37,8 @@ class SearchList extends Component {
       },
       method: 'GET',
     }).then((response)=> {
+
       if (response.status === 200) {
-        that.props.form.setFieldsValue({
-          name:response.data.data.name,
-          number:response.data.data.number,
-          remark:response.data.data.remark,
-          device_type_id:response.data.data.device_type_id,
-        })
         const editChannels=that.state.editChannels;
         for(let i=0;i<response.data.data.channels.length;i++){
           if(response.data.data.channels[i].is_editable===1){
@@ -51,82 +51,221 @@ class SearchList extends Component {
         console.log('editChannels',editChannels)
         that.setState({
           editChannels:editChannels,
-          channels: response.data.data.channels
+          channels: response.data.data.channels,
+          device_type_id:response.data.data.device_type_id
+        },function () {
         })
       }
     })
   }
+  handleAdd = ()=> {
+    const formValues = this.addChannel.props.form.getFieldsValue();
+    console.log('formValues', formValues)
+    if(!formValues.number){
+      message.error('请选择通道编号')
+      return false;
+    }
+    if(!formValues.name){
+      message.error('请输入通道名称')
+      return false;
+    }
+    if(!formValues.sensor_id){
+      message.error('请选择接入传感器')
+      return false;
+    }
+    const channel={
+      number:formValues.number,
+      name:formValues.name,
+      alias:formValues.alias,
+      sensor_id:formValues.sensor_id,
+    };
+    console.log('channel',channel)
+    const that = this;
+    this.props.dispatch({
+      type: 'devices/edit',
+      payload: {
+        channels:[channel],
+        id:this.props.history.location.query.id
+      },
+      callback: function () {
+        if(that.state.editRecord.number){
+          message.success('修改通道成功')
+        }else {
+          message.success('添加通道成功')
+        }
+        that.setState({
+          addModal: false,
+          editModal:false,
+          editRecord:{}
+        });
+        that.fetchCurrent()
+      }
+    });
+  }
+  handleRemove=(record)=>{
+    const that = this;
+    this.props.dispatch({
+      type: 'devices/edit',
+      payload: {
+        channels:[{
+          number:record.number,
+          sensor_id:''
+        }],
+        id:this.props.history.location.query.id
+      },
+      callback: function () {
+          message.success('删除通道成功')
+        that.fetchCurrent()
+      }
+    });
+  }
   render() {
     const columns = [
       {
-        title: '通道编号',
-        dataIndex: 'number',
-      },
-      {
-        title: '通道名称',
+        title: '名称',
         dataIndex: 'name',
       },
-      {
-        title: '通道别名',
-        dataIndex: 'alias',
+     {
+       title: '通道',
+       dataIndex: 'display_name',
+     },
 
-      },
       {
-        title: '是否物理通道',
-        dataIndex: 'is_physical',
-        render:(text,record)=>{
-          return text===-1?<div><Badge status="error" />否</div>:<div><Badge status="success" />是</div>
-        }
-      },
-      {
-        title: '数据单位',
+        title: '单位',
         dataIndex: 'data_unit',
       },
+
       {
-        title: '数据类型',
-        dataIndex: 'data_type',
-        render:(text,record)=>{
-          let data_type = ''
-          switch (text.toString()) {
-            case '1':
-              data_type = '整型';
-              break;
-            case '2':
-              data_type = '浮点型';
-              break;
-            case '3':
-              data_type = '字符型';
-              break;
-            default:
-              break
-          }
-          return data_type
-        }
-      },
-      {
-        title: '保留小数位',
-        dataIndex: 'data_accuracy',
-      },
-      {
-        title: '已接入的传感器型号/名称',
+        title: '传感器',
         dataIndex: 'installed_sensor',
         render: (text, record) => {
           return  text?`${text.model}/${text.name}`:''
         }
       },
+      {
+        title: '备注',
+        dataIndex: 'alias',
+      },
+      {
+        title: '操作',
+        render: (text, record) => {
+          if(record.is_physical===1){
+            return  <Fragment>
+              <Popconfirm title={'确定要删除吗?'}
+                          onConfirm={()=>this.handleRemove(record)}>
+                <a >删除</a>
+              </Popconfirm>
+
+            </Fragment>
+          }else{
+            return ''
+          }
+        }
+      },
+    ];
+    const columns2 = [
+      // {
+      //  title: '已存在通道编号',
+      //   dataIndex: 'number',
+      // },
+      {
+        title: '名称',
+        dataIndex: 'name',
+      },
+      {
+        title: '单位',
+        dataIndex: 'data_unit',
+      },
+      {
+        title: '备注',
+        dataIndex: 'alias',
+      },
+    ];
+    const columns3 = [
+      // {
+      //  title: '已存在通道编号',
+      //   dataIndex: 'number',
+      // },
+      {
+        title: '名称',
+        dataIndex: 'name',
+      },
+      {
+        title: '备注',
+        dataIndex: 'alias',
+      },
     ];
     return (
       <div>
         <Card bordered={false} style={{marginTop: '24px'}}>
+
+          <Table
+            style={{marginTop:'16px'}}
+            title={() => {
+              return <div> 传感器 <Button style={{float:'right'}} type='primary' size="small" onClick={()=>{
+                this.setState({
+                  addModal:true
+                })
+              }}>添加</Button></div>
+            }}
+            size='small'
+            rowKey={'number'}
+            dataSource={this.state.channels.filter(o=>o.type===1)}
+            columns={columns}
+            pagination={false}
+          />
             <Table
+              style={{marginTop:'16px'}}
+              title={() => '发电机信息'}
               size='small'
               rowKey={'number'}
-              dataSource={this.state.channels}
-              columns={columns}
+              dataSource={this.state.channels.filter(o=>o.type===3)}
+              columns={columns2}
               pagination={false}
-              style={{marginBottom:'16px'}}
             />
+          <Table
+            style={{marginTop:'16px'}}
+            title={() => '阀门'}
+            size='small'
+            rowKey={'number'}
+            dataSource={this.state.channels.filter(o=>o.type===2)}
+            columns={columns3}
+            pagination={false}
+          />
         </Card>
+        <Modal
+          title={'添加' }
+          destroyOnClose
+          visible={this.state.addModal}
+          centered
+          onOk={this.handleAdd}
+          onCancel={()=> {
+            this.setState({addModal: false})
+          }}
+        >
+          <AddChannel
+            channels={this.state.channels}
+            device_type_id={this.state.device_type_id}
+                           wrappedComponentRef={(inst) => this.addChannel = inst}/>
+
+        </Modal>
+        <Modal
+          title={'修改通道' }
+          destroyOnClose
+          visible={this.state.editModal}
+          centered
+          onOk={this.handleAdd}
+          onCancel={()=> {
+            this.setState({editModal: false})
+          }}
+        >
+          <AddChannel
+            editRecord={this.state.editRecord}
+            channels={this.state.channels}
+            device_type_id={this.state.device_type_id}
+            wrappedComponentRef={(inst) => this.addChannel = inst}/>
+
+        </Modal>
 
       </div>
     );

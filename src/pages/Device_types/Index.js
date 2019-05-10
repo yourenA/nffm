@@ -296,7 +296,7 @@ class TableList extends PureComponent {
         render: (text, record) => (
           <Fragment>
             {/*<a onClick={() => this.handleUpdateModalVisible(true, record)}>配置</a>*/}
-            <Link to={`/device/device_types/info/views?id=${record.id}&name=${record.name}`}>查看型号视图</Link>
+            <Link to={`/views/device_views/info/views?id=${record.id}&name=${record.name}`}>查看型号视图</Link>
           </Fragment>
         ),
       },

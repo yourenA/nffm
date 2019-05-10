@@ -1,20 +1,19 @@
 import React, { Component } from 'react';
 import router from 'umi/router';
 import { connect } from 'dva';
+import EditSystemConfig from './EditSystemConfig.js'
 import { PageHeader,Badge,Table,Divider,Card,Button,Modal ,message   } from 'antd';
-import EditConfigs from './EditConfigs'
-@connect(({configs, loading}) => ({
-  configs,
+@connect(({system_configs, loading}) => ({
+  system_configs,
 }))
 class SearchList extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      editRecord:{},
-      targetKeys: [],
-      selectedKeys: [],
+      editRecord:{}
     };
   }
+
   componentDidMount() {
     this.handleSearch()
   }
@@ -22,9 +21,8 @@ class SearchList extends Component {
     const that = this;
     const {dispatch} = this.props;
     dispatch({
-      type: 'configs/fetch',
+      type: 'system_configs/fetch',
       payload: {
-        device_id:that.props.history.location.query.id
       },
       callback: function () {
         if (cb) cb()
@@ -33,31 +31,31 @@ class SearchList extends Component {
     });
   }
   handleEdit = ()=> {
-    const formValues = this.editConfig.props.form.getFieldsValue();
-    console.log('formValues2', formValues)
+    const formValues = this.editSystemConfig.props.form.getFieldsValue();
+    console.log('formValues', formValues)
     const that = this;
     this.props.dispatch({
-      type: 'configs/edit',
+      type: 'system_configs/edit',
       payload: {
-        device_id:that.props.history.location.query.id,
-        [that.state.editRecord.key]:formValues.value
+        [that.state.editRecord.key]:formValues.value,
+
       },
       callback: function () {
-        message.success('修改设备配置成功')
+        message.success(`修改"${that.state.editRecord.name}"成功`)
         that.setState({
           editModal: false,
         });
-        // that.handleSearch()
+        that.handleSearch()
       }
     });
   }
   render() {
     const {
-      configs: {data, loading, meta},
+      system_configs: {data, loading, meta},
     } = this.props;
     const columns = [
       {
-        title: '名称',
+        title: '配置名称',
         dataIndex: 'name',
       },
       {
@@ -81,30 +79,28 @@ class SearchList extends Component {
     ];
     return (
       <div>
-        <Card style={{marginTop:'24px'}}>
+        <Card >
           <Table
             size='small'
             loading={loading}
-            rowKey={'key'}
-            dataSource={data.filter((o)=>o.key!=='server_address')}
+            rowKey={'id'}
+            dataSource={data}
             columns={columns}
             pagination={false}
           />
         </Card>
         <Modal
-          title={'编辑'+this.state.editRecord.name }
+          title={`编辑 "${this.state.editRecord.name}"` }
           destroyOnClose
           visible={this.state.editModal}
           centered
-          width={580}
           onOk={this.handleEdit}
           onCancel={()=> {
             this.setState({editModal: false, editRecord: {}})
           }}
         >
-          <EditConfigs editRecord={this.state.editRecord}
-                      wrappedComponentRef={(inst) => this.editConfig = inst}/>
-
+          <EditSystemConfig editRecord={this.state.editRecord}
+                            wrappedComponentRef={(inst) => this.editSystemConfig = inst}/>
         </Modal>
         </div>
     );

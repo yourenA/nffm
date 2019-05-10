@@ -39,7 +39,6 @@ class SearchList extends Component {
       callback: function () {
         if (cb) cb()
       }
-
     });
   }
   handleAdd = ()=> {
@@ -58,6 +57,8 @@ class SearchList extends Component {
       callback: function () {
         message.success('新建视图成功')
         that.setState({
+          targetKeys: [],
+          selectedKeys: [],
           addModal: false,
         });
         that.handleSearch()
@@ -81,6 +82,8 @@ class SearchList extends Component {
       callback: function () {
         message.success('修改视图成功')
         that.setState({
+          targetKeys: [],
+          selectedKeys: [],
           editModal: false,
         });
         that.handleSearch()
@@ -112,13 +115,10 @@ class SearchList extends Component {
         dataIndex: 'name',
       },
       {
-        title: '视图列信息',
-        dataIndex: 'columns',
+        title: '可选数据单位',
+        dataIndex: 'optional_data_units',
         render: (text, record) => {
-          return text.reduce((pre,item)=>{
-            pre.push(item.name);
-            return pre
-          },[]).join(' | ')
+          return text.join(' | ')
         }
       },
       {
@@ -184,10 +184,11 @@ class SearchList extends Component {
           visible={this.state.addModal}
           centered
           destroyOnClose
-          width={580}
+          width={700}
           onOk={this.handleAdd}
           onCancel={()=> {
-            this.setState({addModal: false})
+            this.setState({addModal: false,targetKeys: [],
+              selectedKeys: []})
           }}
         >
           <AddOrEditSensors history={this.props.history}
@@ -203,7 +204,7 @@ class SearchList extends Component {
           destroyOnClose
           visible={this.state.editModal}
           centered
-          width={580}
+          width={700}
           onOk={this.handleEdit}
           onCancel={()=> {
             this.setState({editModal: false, editRecord: {},      targetKeys: [],

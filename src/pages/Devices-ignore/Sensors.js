@@ -151,6 +151,7 @@ class SearchList extends Component {
             columns={columns}
             pagination={false}
           />
+          <Button type='primary' block>添加通道</Button>
         </Card>
         <Modal
           title={'新建传感器' }

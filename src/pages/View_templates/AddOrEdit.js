@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
 import { connect } from 'dva';
 import request from '@/utils/request';
-import { PageHeader,Input ,Icon ,Form,Card,Button,Col,Row,message} from 'antd';
-
+import { PageHeader,Input ,Icon ,Form,Card,Button,Select,Row,message} from 'antd';
+const { Option } = Select;
 class SearchList extends Component {
   constructor(props) {
     super(props);
     this.state={
       id : 0,
-      columns:[]
+      optional_data_units:[]
     }
   }
   componentDidMount() {
@@ -21,8 +21,8 @@ class SearchList extends Component {
     }).then((response)=>{
       that.props.form.setFieldsValue({name:response.data.data.name})
       that.setState({
-        id:response.data.data.columns.length,
-        columns:response.data.data.columns
+        id:response.data.data.optional_data_units.length,
+        optional_data_units:response.data.data.optional_data_units
       })
     });
   }
@@ -56,28 +56,28 @@ class SearchList extends Component {
   handleSubmit = (e) => {
     e.preventDefault();
     this.props.form.validateFields((err, values) => {
-      if (!err) {
+      if (true) {
         const { keys, names } = values;
         console.log('Received values of form: ', values);
         // console.log('Merged values:', keys.map(key => names[key]));
         const that = this;
-        let columns=[]
-        if(!values.names){
+        let optional_data_units=[]
+        if(!values.units){
           message.error('列不能为空')
           return false
         }
-        for(let i=0;i<values.names.length;i++){
-          if(values.names[i]){
-            columns.push({name:values.names[i],alias:values.alias[i]})
+        for(let i=0;i<values.units.length;i++){
+          if(values.units[i]){
+            optional_data_units.push(values.units[i])
           }
         }
-        console.log('columns',columns)
+        console.log('optional_data_units',optional_data_units)
         this.props.dispatch({
           type: this.props.history.location.query.id==='add'?'view_templates/add':'view_templates/edit',
           payload: {
             id:this.props.history.location.query.id,
             name:values.name,
-            columns
+            optional_data_units
             // template_id: formValues.template_id ? formValues.template_id.key : ''
           },
           callback: function () {
@@ -104,7 +104,7 @@ class SearchList extends Component {
     const formItemLayoutWithOutLabel = {
       wrapperCol: {
         xs: { span: 24, offset: 0 },
-        sm: { span: 18, offset: 6 },
+        sm: { span: 15, offset: 7 },
       },
 
     };
@@ -125,7 +125,40 @@ class SearchList extends Component {
     getFieldDecorator('keys', { initialValue: keysArr });
     const keys = getFieldValue('keys');
     console.log('render keys',keys)
-    const formItems = keys.map((k, index) => {
+    const formUnitsItems= keys.map((k, index) => (
+      <Form.Item
+        {...(index === 0 ? formItemLayout2 : formItemLayoutWithOutLabel)}
+        label={index === 0 ? '数据单位' : ''}
+        required={false}
+        key={k}
+      >
+        {getFieldDecorator(`units[${k}]`, {
+          initialValue: this.state.optional_data_units[k] ? this.state.optional_data_units[k] : '',
+          rules: [{
+            rules: [{required: true, message: '数据单位不能为空'}],
+          }],
+        })(
+          <Select placeholder="请选择单位"  style={{ width: '60%', marginRight: 8 }}>
+            <Option value="mV">mV</Option>
+            <Option value="V">V</Option>
+            <Option value="mA">mA</Option>
+            <Option value="A">A</Option>
+            <Option value="Mpa">Mpa</Option>
+            <Option value="Rpm">Rpm</Option>
+            <Option value="W">W</Option>
+          </Select>
+        //  <Input placeholder="输入单位" style={{ width: '60%', marginRight: 8 }} />
+        )}
+        {keys.length > 1 ? (
+          <Icon
+            className="dynamic-delete-button"
+            type="minus-circle-o"
+            onClick={() => this.remove(k)}
+          />
+        ) : null}
+      </Form.Item>
+    ));
+/*    const formItems = keys.map((k, index) => {
       return (
       <Row gutter={12} key={k}>
         <Col span={11} >
@@ -167,7 +200,7 @@ class SearchList extends Component {
         ) : null}
       </Row>
 
-    )});
+    )});*/
     return (
       <div>
       <PageHeader
@@ -185,10 +218,10 @@ class SearchList extends Component {
                 <Input />
               )}
             </Form.Item>
-            {formItems}
+            {formUnitsItems}
             <Form.Item {...formItemLayoutWithOutLabel}>
               <Button type="dashed" onClick={this.add} style={{ width: '60%' }}>
-                <Icon type="plus" /> 添加列
+                <Icon type="plus" /> 添加数据单位
               </Button>
             </Form.Item>
             <Form.Item {...formItemLayoutWithOutLabel}>

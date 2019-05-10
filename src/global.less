@@ -1,3 +1,4 @@
+@import '~antd/lib/style/themes/default.less';
 html,
 body,
 #root {
@@ -86,7 +87,22 @@ p{
 .ant-modal .ant-form-item{
   margin-bottom: 5px;
 }
-
+.ant-table{
+  overflow-x:auto ;
+}
+.ant-table > .ant-table-content  .ant-table-thead {
+  tr th {
+    white-space: nowrap;
+  }
+}
+.ant-table > .ant-table-content  .ant-table-body{
+  thead tr th{
+    white-space:nowrap;
+  }
+  tbody{
+    white-space:nowrap;
+  }
+}
 .ant-table-small{
   overflow-x:auto ;
 }
@@ -119,14 +135,12 @@ p{
     }
   }
 }
-//.ant-card{
-//  background: transparent !important;
-//  border:1px solid #ffffff !important;
-//  .ant-card-head{
-//    color: #ffffff !important;
-//  }
-//}
-//.ant-layout-footer {
-//  margin-top: 16px;
-//  background: transparent !important;
-//}
+.ant-transfer-list{
+  width: 200px !important;
+}
+@media screen and (max-width: @screen-sm) {
+  .ant-card-body{
+    padding: 12px !important;
+  }
+}
+
