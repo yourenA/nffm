@@ -11,8 +11,20 @@ body,
 
 .ant-layout {
   min-height: 100vh;
+  background: #f2f2f2 !important;
 }
+.ant-card{
+  box-shadow: 0 2px 3px 0 rgba(0,0,0,.2);
+  margin-right:auto !important;
+  margin-left:auto !important;
+}
+.ant-table-title{
+  background: #ffffff;
+}
+.ant-page-header .ant-breadcrumb {
+  margin-bottom: 0!important;
 
+}
 canvas {
   display: block;
 }
@@ -46,14 +58,6 @@ p{
   cursor: pointer;
   color: @primary-color;
   text-decoration: underline;
-}
-.ant-table-tbody {
-  tr:nth-child(odd) {
-    background-color: #FFFFFF;
-  }
-  tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
 }
 .operate-content{
   margin-bottom: 16px;
@@ -101,6 +105,13 @@ p{
   }
   tbody{
     white-space:nowrap;
+    tr:nth-of-type(odd) {
+      background: #fff;
+
+    }
+    tr:nth-of-type(even) {
+      background: #fff;
+    }
   }
 }
 .ant-table-small{
@@ -109,34 +120,48 @@ p{
 .ant-table-small > .ant-table-content  .ant-table-thead {
   margin: 0 !important;
   tr th {
-    font-size: 12px;
-    background: #4472c4 !important;
-    color: #ffffff;
+    font-size: 13px;
+    background: #eeeeee !important;
+    //color: #ffffff;
     white-space: nowrap;
   }
 }
 .ant-table-small > .ant-table-content  .ant-table-body{
   margin:  0 !important;
   thead tr th{
-    font-size: 12px;
-    background: #4472c4 !important;
-    color: #ffffff;
+    font-size: 13px;
+    background: #f2f2f2 !important;
+    //color: #ffffff;
     white-space:nowrap;
   }
   tbody{
-    font-size: 12px;
+    font-size: 13px;
     white-space:nowrap;
     tr:nth-of-type(odd) {
-      background: #e9ebf5;
-
+      background: #fff;
     }
     tr:nth-of-type(even) {
-      background: #cfd5ea;
+      background: #fff;
     }
   }
 }
 .ant-transfer-list{
   width: 200px !important;
+}
+
+.chart{
+  position: relative;
+  .chart_empty{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+  }
+}
+.info-page-container{
+  max-width: 1200px;
+  margin: 0 auto;
+  margin-top: 24px
 }
 @media screen and (max-width: @screen-sm) {
   .ant-card-body{

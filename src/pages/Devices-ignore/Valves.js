@@ -5,16 +5,17 @@ import { Alert,Badge,InputNumber,Select,Card,Button,List ,message,Collapse,Switc
 import DescriptionList from '@/components/DescriptionList';
 import findIndex from 'lodash/findIndex';
 const Panel = Collapse.Panel;
+import find from 'lodash/find'
 const {Description} = DescriptionList;
 const Option = Select.Option;
-@connect(({valves, loading}) => ({
-  valves,
+@connect(({valves, loading,system_configs}) => ({
+  valves,system_configs
 }))
 class SearchList extends Component {
   constructor(props) {
     super(props);
     this.name=this.props.history.location.query.name
-    console.log(this.props)
+    this.timer=null;
     this.state = {
       editRecord:{},
       mode:'1',
@@ -24,14 +25,43 @@ class SearchList extends Component {
       under_recover_rate:90,
       under_rate:80,
       channels:[],
-      channel:''
+      channel:'',
+      refresh_second:0
     };
   }
 
   componentDidMount() {
-    this.handleSearch()
+    const that=this;
+    const {dispatch} = this.props;
+    dispatch({
+      type: 'system_configs/fetch',
+      payload: {
+
+      },
+      callback:()=>{
+        const {system_configs}=that.props
+        const refresh_second=find(system_configs.data,function (o) {
+          return o.key==='valve_info_refresh_time'
+        })
+        if(refresh_second){
+          that.setState({
+            refresh_second:Number(refresh_second.value),
+          },function () {
+            that.handleSearch(true)
+          })
+        }
+      }
+    });
+    // this.handleSearch()
   }
-  handleSearch = ( cb) => {
+  componentWillUnmount() {
+    console.log('componentWillUnmount')
+    if(this.timer){
+      console.log(this.timer)
+    }
+    clearTimeout(this.timer)
+  }
+  handleSearch = (init) => {
     const that = this;
     const {dispatch} = this.props;
     dispatch({
@@ -52,17 +82,26 @@ class SearchList extends Component {
             })
           }
         }
+        if(init){
+          that.setState({
+            over:data.over,
+            over_recover:data.over_recover,
+            under:data.under,
+            under_recover:data.under_recover,
+            valves:valves,
+            channels:data.optional_channels,
+            channel:data.channel_number,
+            showEdit:true
+          })
+        }
 
-        that.setState({
-          over:data.over,
-          over_recover:data.over_recover,
-          under:data.under,
-          under_recover:data.under_recover,
-          valves:valves,
-          channels:data.optional_channels,
-          channel:data.channel_number,
-          showEdit:true
-        })
+        if(that.timer){
+          console.log('clearTimeout')
+          clearTimeout(that.timer)
+        }
+        that.timer=setTimeout(function () {
+          that.handleSearch();
+        },that.state.refresh_second*1000)
       }
 
     });
@@ -91,7 +130,7 @@ class SearchList extends Component {
         device_id:that.props.history.location.query.id
       },
       callback: function () {
-        message.success('修改阀门成功')
+        message.success('修改策略成功')
       }
     });
   }
@@ -125,11 +164,12 @@ class SearchList extends Component {
     } = this.props;
     return (
       <div>
-        <Card style={{marginTop:'24px'}}>
+        <div className="info-page-container" >
           <Collapse activeKey={['1']}>
             <Panel showArrow={false} header={<div><Icon type="box-plot" /> 当前策略</div>} key="1"
             >
-              <div style={{marginBottom:'10px'}}>
+              <Alert style={{marginBottom:'6px'}} message={`数据每隔${this.state.refresh_second}秒刷新一次`} type="info"  />
+              <div style={{marginBottom:'6px'}}>
                 <DescriptionList  size="small" col="4" >
                   <Description term="模式"> <h3>{data.mode===1?'手动':'自动'}</h3></Description>
                 </DescriptionList>
@@ -138,7 +178,7 @@ class SearchList extends Component {
                 data.mode===2&&
                 <div style={{marginBottom:'10px'}}>
                   <DescriptionList  size="small" col="4" >
-                    <Description term="当前通道">  {data.channel_number}</Description>
+                    <Description term="当前传感器">  {data.channel_name}</Description>
                   </DescriptionList>
                   <DescriptionList  size="small" col="4" >
                     <Description term="over"> {data.over} Mpa</Description>
@@ -184,7 +224,7 @@ class SearchList extends Component {
                     </Form.Item>
                     {
                       this.state.mode === '2' && <Form.Item
-                        label="通道"
+                        label="传感器"
                       >
                         <Select value={this.state.channel}  style={{width: 150}}
                                 onChange={(e)=>{
@@ -205,67 +245,6 @@ class SearchList extends Component {
                 {
                   this.state.mode==='2'&&
                   <div  style={{marginBottom:'10px'}}>
-                    <Alert message="over必须大于overRecover，overRecover必须大于underRecover，underRecover必须大于 under" type="info"   style={{marginBottom:'10px'}} />
-                    <h3>自动填充数据:</h3>
-                    <div  style={{marginBottom:'8px'}}>
-                      自动数值 : <InputNumber  onChange={(e)=>{
-                        this.setState({
-                          autoData:e
-                        })
-                    }} />
-                      <Button type='primary' style={{marginLeft:'10px'}} onClick={()=>{
-                        this.setState({
-                          over:(this.state.autoData*(this.state.over_rate/100)).toFixed(2),
-                          over_recover:(this.state.autoData*(this.state.over_recover_rate/100)).toFixed(2),
-                          under_recover:(this.state.autoData*(this.state.under_recover_rate/100)).toFixed(2),
-                          under:(this.state.autoData*(this.state.under_rate/100)).toFixed(2),
-                        })
-                      }}>计算</Button>
-                    </div>
-
-                    <Form layout={'inline'}>
-                      <Form.Item
-                        label="over比例"
-                      >
-                        <InputNumber
-                          formatter={value => `${value}%`}
-                          parser={value => value.replace('%', '')}
-                          onChange={(e)=>{
-                          this.changeAuto('over_rate',e)
-                        }} value={this.state.over_rate} />
-                      </Form.Item>
-                      <Form.Item
-                        label="overRecover比例"
-                      >
-                        <InputNumber
-                          formatter={value => `${value}%`}
-                          parser={value => value.replace('%', '')}
-                          onChange={(e)=>{
-                          this.changeAuto('over_recover_rate',e)
-                        }} value={this.state.over_recover_rate} />
-                      </Form.Item>
-                      <Form.Item
-                        label="underRecover比例"
-                      >
-                        <InputNumber
-                          formatter={value => `${value}%`}
-                          parser={value => value.replace('%', '')}
-                          onChange={(e)=>{
-                          this.changeAuto("under_recover_rate",e)
-                        }}  value={this.state.under_recover_rate}  />
-                      </Form.Item>
-                      <Form.Item
-                        label="under比例"
-                      >
-                        <InputNumber
-                          formatter={value => `${value}%`}
-                          parser={value => value.replace('%', '')}
-                          onChange={(e)=>{
-                          this.changeAuto('under_rate',e)
-                        }} value={this.state.under_rate} />
-                      </Form.Item>
-
-                    </Form>
                     <Form layout={'inline'}>
                       <Form.Item
                         label="over"
@@ -297,6 +276,60 @@ class SearchList extends Component {
                       </Form.Item>
 
                     </Form>
+                    <Alert message="over必须大于overRecover，overRecover必须大于underRecover，underRecover必须大于 under" type="info"   style={{marginBottom:'10px'}} />
+                    <h3>自动填充数据:</h3>
+                    <div  style={{marginBottom:'8px'}}>
+                      自动数值 : <InputNumber  onChange={(e)=>{
+                        this.setState({
+                          autoData:e
+                        })
+                    }} />
+                      <Button type='primary' style={{marginLeft:'10px'}} onClick={()=>{
+                        this.setState({
+                          over:(this.state.autoData*(this.state.over_rate/100)).toFixed(2),
+                          over_recover:(this.state.autoData*(this.state.over_recover_rate/100)).toFixed(2),
+                          under_recover:(this.state.autoData*(this.state.under_recover_rate/100)).toFixed(2),
+                          under:(this.state.autoData*(this.state.under_rate/100)).toFixed(2),
+                        })
+                      }}>计算</Button>
+                    </div>
+
+                    <Form layout={'inline'}>
+                      <Form.Item
+                        label="over(%)"
+                      >
+                        <InputNumber
+                          onChange={(e)=>{
+                          this.changeAuto('over_rate',e)
+                        }} value={this.state.over_rate} />
+                      </Form.Item>
+                      <Form.Item
+                        label="overRecover(%)"
+                      >
+                        <InputNumber
+                          onChange={(e)=>{
+                          this.changeAuto('over_recover_rate',e)
+                        }} value={this.state.over_recover_rate} />
+                      </Form.Item>
+                      <Form.Item
+                        label="underRecover(%)"
+                      >
+                        <InputNumber
+                          onChange={(e)=>{
+                          this.changeAuto("under_recover_rate",e)
+                        }}  value={this.state.under_recover_rate}  />
+                      </Form.Item>
+                      <Form.Item
+                        label="under(%)"
+                      >
+                        <InputNumber
+                          onChange={(e)=>{
+                          this.changeAuto('under_rate',e)
+                        }} value={this.state.under_rate} />
+                      </Form.Item>
+
+                    </Form>
+
              {/*      <DescriptionList  size="small" col="4" >
                       <Description term="over">
                   <InputNumber  onChange={(e)=>{
@@ -344,7 +377,7 @@ class SearchList extends Component {
 
 
 
-        </Card>
+        </div>
         </div>
     );
   }

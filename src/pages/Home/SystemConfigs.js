@@ -79,7 +79,11 @@ class SearchList extends Component {
     ];
     return (
       <div>
-        <Card >
+        <PageHeader
+          style={{ margin: '-24px -24px 0' }}
+          title={'系统配置'}
+        />
+        <div className="info-page-container" >
           <Table
             size='small'
             loading={loading}
@@ -88,7 +92,7 @@ class SearchList extends Component {
             columns={columns}
             pagination={false}
           />
-        </Card>
+        </div>
         <Modal
           title={`编辑 "${this.state.editRecord.name}"` }
           destroyOnClose

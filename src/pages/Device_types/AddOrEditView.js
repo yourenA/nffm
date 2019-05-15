@@ -22,15 +22,15 @@ class AddPoliciesForm extends Component {
   componentDidMount() {
     const that = this;
     const {dispatch} = this.props;
-    dispatch({
-      type: 'view_templates/fetch',
-      payload: {
-      },
-    });
+    // dispatch({
+    //   type: 'view_templates/fetch',
+    //   payload: {
+    //   },
+    // });
+    this.fetchCurrent()
     if( this.props.editRecord){
-      this.handleChangeViewTemplate(this.props.editRecord.view_template_id)
+      // this.handleChangeViewTemplate(this.props.editRecord.view_template_id)
     }
-
   }
   handleChange = (nextTargetKeys, direction, moveKeys) => {
     this.props.handleChange(nextTargetKeys);
@@ -40,24 +40,41 @@ class AddPoliciesForm extends Component {
   handleSelectChange = (sourceSelectedKeys, targetSelectedKeys) => {
     this.props.handleSelectChange(sourceSelectedKeys, targetSelectedKeys) ;
   }
-  handleChangeViewTemplate=(value)=>{
-    console.log(value)
-    const that=this;
-    request(`/view_optional_channels`,{
-      params:{
-        device_type_id:that.props.history.location.query.id,
-        view_template_id:value
+  fetchCurrent = ()=> {
+    const that = this;
+    request(`/device_types/${this.props.history.location.query.id}`, {
+      params: {
+        include: 'channels',
       },
-      method:'GET',
-    }).then((response)=>{
-      if(response.status===200){
+      method: 'GET',
+    }).then((response)=> {
+
+      if (response.status === 200) {
         that.setState({
-          channels:response.data.data
+          channels: response.data.data.channels.filter(o=>o.is_hidden!==1),
+        }, function () {
         })
       }
-
-    });
+    })
   }
+  // handleChangeViewTemplate=(value)=>{
+  //   console.log(value)
+  //   const that=this;
+  //   request(`/view_optional_channels`,{
+  //     params:{
+  //       device_type_id:that.props.history.location.query.id,
+  //       view_template_id:value
+  //     },
+  //     method:'GET',
+  //   }).then((response)=>{
+  //     if(response.status===200){
+  //       that.setState({
+  //         channels:response.data.data
+  //       })
+  //     }
+  //
+  //   });
+  // }
   render() {
     const {
       view_templates: {data},
@@ -86,7 +103,7 @@ class AddPoliciesForm extends Component {
             <Input />
           )}
         </Form.Item>
-        <FormItem
+     {/*   <FormItem
           required={true}
           label='视图模板'
           {...formItemLayout}
@@ -98,20 +115,20 @@ class AddPoliciesForm extends Component {
               { data.map(item => <Option key={item.id} value={item.id}>{item.name}</Option>) }
             </Select>
           )}
-        </FormItem>
-        <Form.Item {...formItemLayout} label="包含通道"
+        </FormItem>*/}
+        <Form.Item {...formItemLayout} label="传感器"
                    required={true}
         >
           <Transfer
             dataSource={this.state.channels}
-            titles={['全部', '显示项']}
+            titles={['可选传感器', '已选传感器']}
             targetKeys={this.props.targetKeys}
             selectedKeys={this.props.selectedKeys}
             onChange={this.handleChange}
             onSelectChange={this.handleSelectChange}
             rowKey={record => record.number}
             render={item => {
-              return `${item.number}(${item.name}-${item.data_units.join('|')})`
+              return `${item.name}(${item.data_unit})`
             }}
           />
         </Form.Item>

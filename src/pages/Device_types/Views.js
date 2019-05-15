@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
 import router from 'umi/router';
 import { connect } from 'dva';
-import { PageHeader,Badge,Table,Divider,Card,Button,Modal ,message   } from 'antd';
+import { PageHeader,Collapse,Table,Divider,Card,Button,Modal ,message   } from 'antd';
 import AddOrEditSensors from './AddOrEditView'
+import request from '@/utils/request';
+const Panel = Collapse.Panel;
 @connect(({views, loading}) => ({
   views,
 }))
@@ -28,6 +30,7 @@ class SearchList extends Component {
     this.handleSearch()
 
   }
+
   handleSearch = ( cb) => {
     const that = this;
     const {dispatch} = this.props;
@@ -47,6 +50,10 @@ class SearchList extends Component {
     console.log(this.state)
     const {dispatch} = this.props;
     const that = this;
+    if(that.state.targetKeys.length===0){
+      message.error('通道不能为空')
+      return false
+    }
     dispatch({
       type: 'views/add',
       payload: {
@@ -69,6 +76,10 @@ class SearchList extends Component {
     const formValues = this.editSensors.props.form.getFieldsValue();
     console.log('formValues2', formValues)
     const that = this;
+    if(that.state.targetKeys.length===0){
+      message.error('通道不能为空')
+      return false
+    }
     this.props.dispatch({
       type: 'views/edit',
       payload: {
@@ -115,13 +126,6 @@ class SearchList extends Component {
         dataIndex: 'name',
       },
       {
-        title: '可选数据单位',
-        dataIndex: 'optional_data_units',
-        render: (text, record) => {
-          return text.join(' | ')
-        }
-      },
-      {
         title: '包含通道',
         dataIndex: 'channels',
         render: (text, record) => {
@@ -163,13 +167,15 @@ class SearchList extends Component {
     ];
     return (
       <div>
-        <Card style={{marginTop:'24px'}}>
+        <div className="info-page-container">
           <div className="operate-content">
             <Button icon="plus" type="primary" onClick={() =>{this.setState({addModal:true})}}>
               新建 "{this.name}" 视图
             </Button>
           </div>
-
+          <Collapse activeKey={['1']}  style={{marginTop:'15px'}}>
+            <Panel showArrow={false} header={<div> 视图列表 </div>} key="1"
+            >
           <Table
             size='small'
             loading={loading}
@@ -178,7 +184,10 @@ class SearchList extends Component {
             columns={columns}
             pagination={false}
           />
-        </Card>
+            </Panel>
+
+          </Collapse>
+        </div>
         <Modal
           title={`新建 ${this.name} 视图` }
           visible={this.state.addModal}
@@ -217,7 +226,7 @@ class SearchList extends Component {
                             selectedKeys={this.state.selectedKeys}
                             handleChange={this.handleChange}
                             handleSelectChange={this.handleSelectChange}
-                      wrappedComponentRef={(inst) => this.editSensors = inst}/>
+                            wrappedComponentRef={(inst) => this.editSensors = inst}/>
 
         </Modal>
         </div>

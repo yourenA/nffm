@@ -16,7 +16,7 @@ import {
   Dropdown,
   Menu,
   InputNumber,
-  DatePicker,
+  PageHeader,
   Modal,
   message,
   Badge,
@@ -27,6 +27,7 @@ import {
 } from 'antd';
 import DescriptionList from '@/components/DescriptionList';
 import styles from './Index.less';
+import AddOrEditModel from './AddOrEditModel'
 const FormItem = Form.Item;
 const {Description} = DescriptionList;
 
@@ -91,11 +92,6 @@ class TableList extends PureComponent {
   };
 
 
-  handleModalVisible = flag => {
-    this.setState({
-      addModal: !!flag,
-    });
-  };
   setStep = (step)=> {
     this.setState({
       current: step
@@ -192,17 +188,6 @@ class TableList extends PureComponent {
     return this.renderSimpleForm()
   }
 
-  getMqttInfo = (id)=> {
-    const that = this;
-    request(`/device_types/${id}/mqtt_account`, {
-      method: 'GET',
-    }).then((response)=> {
-      that.setState({
-        mqttInfo: response.data.data,
-        mqttModal: true
-      })
-    });
-  }
   handleDelete = id => {
     const that = this;
     const {dispatch} = this.props;
@@ -210,7 +195,7 @@ class TableList extends PureComponent {
       type: 'device_types/remove',
       payload: {id},
       callback: ()=> {
-        message.success('删除视图模板成功')
+        message.success('删除成功')
         that.handleSearch({
           page: that.state.page,
           per_page: that.state.per_page,
@@ -218,85 +203,81 @@ class TableList extends PureComponent {
       }
     });
   };
+  handleEdit = ()=> {
+    const formValues = this.EditModel.props.form.getFieldsValue();
+    console.log('formValues', formValues)
+    const that = this;
+    this.props.dispatch({
+      type: 'device_types/edit',
+      payload: {
+        device_types_id:this.state.editRecord.id,
+        ...formValues,
+      },
+      callback: function () {
+        message.success('修改成功')
+        that.setState({
+          editModal: false,
+        });
+        that.handleSearch({
+          page: that.state.page,
+          per_page: that.state.per_page,
+        });
+      }
+    });
+  }
+  handleAdd = ()=> {
+    const formValues = this.AddModel.props.form.getFieldsValue();
+    console.log('formValues', formValues)
+    const that = this;
+    this.props.dispatch({
+      type: 'device_types/add',
+      payload: {
+        ...formValues,
+      },
+      callback: function () {
+        message.success('新建成功')
+        that.setState({
+          addModal: false,
+        });
+        that.handleSearch({
+          page: that.state.page,
+          per_page: that.state.per_page,
+        });
+      }
+    });
+  }
   render() {
     const {
       device_types: {data, loading, meta},
     } = this.props;
     const { dispatch } = this.props;
-    const menu = (
-      <Menu onClick={this.handleMenuClick} selectedKeys={[]}>
-        <Menu.Item key="remove">删除</Menu.Item>
-        <Menu.Item key="approval">关闭</Menu.Item>
-      </Menu>
-    );
-    const that = this;
-    const itemMenu = (record)=> (
-      <Menu onClick={(e)=> {
-        if (e.key === 'delete') {
-          Modal.confirm({
-            title: '删除设备',
-            content: `确定删除 ${record.name} 吗？`,
-            okText: '确认',
-            cancelText: '取消',
-            onOk: () => this.handleDelete(record.id),
-          })
-        }
-        if (e.key === 'edit') {
-          this.setState({
-            editModal: true,
-            editRecord: record
-          })
-        }
-        if (e.key === 'mqtt') {
-          this.getMqttInfo(record.id)
-        }
-        if (e.key === 'view') {
-          dispatch(routerRedux.push(`/device/device_types/info/views?id=${record.id}&&name=${record.name}`));
-        }
-        if (e.key === 'sensors') {
-          dispatch(routerRedux.push(`/device/device_types/info/sensors?id=${record.id}&&name=${record.name}`));
-
-        }
-        if (e.key === 'configs') {
-          dispatch(routerRedux.push(`/device/device_types/info/configs?id=${record.id}&&name=${record.name}`));
-
-        }
-      }}>
-        <Menu.Item key="edit">
-          编辑
-        </Menu.Item>
-        <Menu.Item key="configs">
-          设备配置
-        </Menu.Item>
-        <Menu.Item key="sensors">
-          传感器列表
-        </Menu.Item>
-        <Menu.Item key="view">
-          设备视图
-        </Menu.Item>
-        <Menu.Item key="mqtt">
-          MQTT信息
-        </Menu.Item>
-        <Menu.Item key="delete">
-          删除
-        </Menu.Item>
-      </Menu>
-    );
     const columns = [
       {
-        title: '设备类型名称',
+        title: '编号',
+        dataIndex: 'model',
+      },
+      {
+        title: '名称',
         dataIndex: 'name',
       },
       {
-        title: '设备类型型号',
-        dataIndex: 'model',
+        title: '备注',
+        dataIndex: 'remark',
       },
       {
         title: '操作',
         render: (text, record) => (
           <Fragment>
-            {/*<a onClick={() => this.handleUpdateModalVisible(true, record)}>配置</a>*/}
-            <Link to={`/views/device_views/info/views?id=${record.id}&name=${record.name}`}>查看型号视图</Link>
+            <Link to={`/models/device_model/info/sensors?id=${record.id}&&name=${record.name}`}>详细信息</Link>
+            <Divider type="vertical"/>
+            <Link to={`/models/device_model/info/views?id=${record.id}&name=${record.name}`}>视图管理</Link>
+            <Divider type="vertical"/>
+            <a onClick={()=>{
+              this.setState({
+                editRecord:record,
+                editModal:true
+              })
+            }}>编辑</a>
           </Fragment>
         ),
       },
@@ -316,11 +297,24 @@ class TableList extends PureComponent {
     };
     return (
       <div>
-        <Card bordered={false}>
+        <PageHeader
+          style={{ margin: '-24px -24px 0' }}
+          title={'应用列表'}
+        />
+        <div className="info-page-container" >
 
           <div className={styles.tableList}>
+        {/*   <div className={styles.tableListOperator}>
+              <Button icon="plus" type="primary" onClick={
+                ()=>{this.setState({
+                  addModal:true
+                })}
+              }>
+                新建应用
+              </Button>
+            </div>*/}
             <Table
-              className={styles.whiteBg}
+              style={{backgroundColor:'#fff'}}
               loading={loading}
               rowKey={'id'}
               dataSource={data}
@@ -329,7 +323,35 @@ class TableList extends PureComponent {
               pagination={paginationProps}
             />
           </div>
-        </Card>
+          <Modal
+            title={'新建应用'}
+            visible={this.state.addModal}
+            centered
+            onCancel={()=> {
+              this.setState({addModal: false})
+            }}
+            onOk={this.handleAdd}
+          >
+            <AddOrEditModel
+              wrappedComponentRef={(inst) => this.AddModel = inst}/>
+
+          </Modal>
+          <Modal
+            title={'编辑应用'}
+            visible={this.state.editModal}
+            centered
+            destroyOnClose
+            onCancel={()=> {
+              this.setState({editModal: false,editRecord:{}})
+            }}
+            onOk={this.handleEdit}
+          >
+            <AddOrEditModel
+              editRecord={this.state.editRecord}
+              wrappedComponentRef={(inst) => this.EditModel = inst}/>
+
+          </Modal>
+        </div>
       </div>
     );
   }

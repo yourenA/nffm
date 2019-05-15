@@ -19,7 +19,6 @@ import {
   Popconfirm,
   Divider
 } from 'antd';
-import styles from './TableList.less';
 import differenceBy from 'lodash/differenceBy'
 import AddChannel from './AddOrEditChannel'
 const FormItem = Form.Item;
@@ -50,7 +49,7 @@ class SearchList extends Component {
 
   fetchCurrent = ()=> {
     const that = this;
-    request(`/devices/${this.props.history.location.query.id}`, {
+    request(`/device_types/${this.props.history.location.query.id}`, {
       params: {
         include: 'channels',
       },
@@ -58,20 +57,9 @@ class SearchList extends Component {
     }).then((response)=> {
 
       if (response.status === 200) {
-        const editChannels = that.state.editChannels;
-        for (let i = 0; i < response.data.data.channels.length; i++) {
-          if (response.data.data.channels[i].is_editable === 1) {
-            editChannels[response.data.data.channels[i].number] = {};
-            editChannels[response.data.data.channels[i].number].name = response.data.data.channels[i].name
-            editChannels[response.data.data.channels[i].number].alias = response.data.data.channels[i].alias
-            editChannels[response.data.data.channels[i].number].sensor_id = response.data.data.channels[i].installed_sensor ? response.data.data.channels[i].installed_sensor.id : ''
-          }
-        }
-        console.log('editChannels', editChannels)
         that.setState({
-          editChannels: editChannels,
           channels: response.data.data.channels,
-          device_type_id: response.data.data.device_type_id
+          device_type_id: response.data.data.id
         }, function () {
         })
       }
@@ -101,10 +89,10 @@ class SearchList extends Component {
     console.log('channel', channel)
     const that = this;
     this.props.dispatch({
-      type: 'devices/edit',
+      type: 'device_types/edit',
       payload: {
         channels: [channel],
-        id: this.props.history.location.query.id
+        device_types_id: this.props.history.location.query.id
       },
       callback: function () {
         if (that.state.editRecord.number) {
@@ -122,15 +110,18 @@ class SearchList extends Component {
     });
   }
   handleRemove = (record)=> {
+    console.log(record)
     const that = this;
     this.props.dispatch({
-      type: 'devices/edit',
+      type: 'device_types/edit',
       payload: {
         channels: [{
           number: record.number,
-          sensor_id: ''
+          sensor_id: '',
+          name: '',
+          alias: '',
         }],
-        id: this.props.history.location.query.id
+        device_types_id: this.props.history.location.query.id
       },
       callback: function () {
         message.success('删除通道成功')
@@ -191,10 +182,12 @@ class SearchList extends Component {
       {
         title: '名称',
         dataIndex: 'name',
+        width:'20%'
       },
       {
         title: '单位',
         dataIndex: 'data_unit',
+        width:'20%'
       },
       {
         title: '备注',
@@ -209,6 +202,12 @@ class SearchList extends Component {
       {
         title: '名称',
         dataIndex: 'name',
+        width:'20%'
+      },
+      {
+        title: '单位',
+        dataIndex: 'data_unit',
+        width:'20%'
       },
       {
         title: '备注',
@@ -230,7 +229,7 @@ class SearchList extends Component {
               <Table
                 size='small'
                 rowKey={'number'}
-                dataSource={this.state.channels.filter(o=>o.type === 1)}
+                dataSource={this.state.channels.filter(o=>{ return (o.type === 1 && o.is_hidden===-1)})}
                 columns={columns}
                 pagination={false}
               />

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import router from 'umi/router';
 import { connect } from 'dva';
 import { routerRedux } from 'dva/router';
-import { PageHeader,Tabs } from 'antd';
+import { PageHeader,Tabs,Breadcrumb } from 'antd';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import request from '@/utils/request';
 const TabPane = Tabs.TabPane;
@@ -76,14 +76,16 @@ class SearchList extends Component {
       <PageHeader
         style={{ margin: '-24px -24px 0' }}
         onBack={() => this.props.history.goBack()}
-        title={`${this.state.number}(${this.name})`}
+        title={  <Breadcrumb>
+          <Breadcrumb.Item style={{cursor:'pointer'}} onClick={() => this.props.history.goBack()}>设备列表</Breadcrumb.Item>
+          <Breadcrumb.Item>{`${this.state.number}(${this.name})`}</Breadcrumb.Item>
+        </Breadcrumb>}
       />
         <Tabs activeKey={this.state.activeKey} onChange={this.handleTabChange}  style={{ margin: '0 -24px ' ,background:'#fff',paddingLeft:'24px'}} >
-          <TabPane tab="数据采集" key="sensors"></TabPane>
           <TabPane tab="设备实时数据" key="real_time"></TabPane>
-          <TabPane tab="传感器历史数据" key="history"></TabPane>
           <TabPane tab="阀门控制" key="valves"></TabPane>
-          <TabPane tab="设备配置" key="configs"></TabPane>
+          <TabPane tab="传感器历史数据" key="history"></TabPane>
+          <TabPane tab="主题配置" key="configs"></TabPane>
           <TabPane tab="设备信息" key="information"></TabPane>
         </Tabs>
         {this.props.children}

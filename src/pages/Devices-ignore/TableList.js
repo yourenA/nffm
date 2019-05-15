@@ -15,8 +15,8 @@ import {
   Button,
   Dropdown,
   Menu,
-  InputNumber,
-  DatePicker,
+  Alert,
+  PageHeader,
   Modal,
   message,
   Badge,
@@ -28,6 +28,7 @@ import {
 import DescriptionList from '@/components/DescriptionList';
 import styles from './TableList.less';
 import AddOrEditDevice from './AddOrEditDevice2'
+import find from 'lodash/find'
 const FormItem = Form.Item;
 const {Step} = Steps;
 const {TextArea} = Input;
@@ -42,11 +43,15 @@ const statusMap = ['default', 'processing', 'success', 'error'];
 const status = ['关闭', '运行中', '已上线', '异常'];
 
 /* eslint react/no-multi-comp:0 */
-@connect(({devices, loading}) => ({
-  devices,
+@connect(({devices, loading,system_configs}) => ({
+  devices,system_configs
 }))
 @Form.create()
 class TableList extends PureComponent {
+  constructor(props) {
+    super(props);
+    this.timer=null;
+  }
   state = {
     modalVisible: false,
     updateModalVisible: false,
@@ -60,16 +65,17 @@ class TableList extends PureComponent {
     name: '',
     editRecord: {},
     current: 0,
+    refresh_second:1,
     stepData: {},
     mqttInfo: {}
   };
 
 
   componentDidMount() {
+    let params = {}
     if (this.props.location.search) {
       const search = this.props.location.search.substring(1);
       const searchArr = search.split("&");
-      let params = {}
       for (let i = 0; i < searchArr.length; i++) {
         var tmp_arr = searchArr[i].split("=");
 
@@ -81,19 +87,48 @@ class TableList extends PureComponent {
           this.props.form.setFieldsValue({[tmp_arr[0]]:decodeURI(tmp_arr[1])})
         }
       }
-      console.log('params', params)
-      this.handleSearch(params)
+      // console.log('params', params)
+      // this.handleSearch(params)
     }else{
-      this.handleSearch({
+      params={
         page: 1,
         per_page: 30,
         number: '',
         name: '',
-      })
+      }
     }
+    const that=this;
+    const {dispatch} = this.props;
+    dispatch({
+      type: 'system_configs/fetch',
+      payload: {
+
+      },
+      callback:()=>{
+        const {system_configs}=that.props
+        const refresh_second=find(system_configs.data,function (o) {
+          return o.key==='device_info_refresh_time'
+        })
+        console.log('refresh_second',refresh_second)
+
+        if(refresh_second){
+          that.setState({
+            refresh_second:Number(refresh_second.value),
+          },function () {
+            that.handleSearch(params)
+          })
+        }
+      }
+    });
 
   }
-
+  componentWillUnmount() {
+    console.log('componentWillUnmount')
+    if(this.timer){
+      console.log(this.timer)
+    }
+    clearTimeout(this.timer)
+  }
   handleMenuClick = e => {
     const {dispatch} = this.props;
     const {selectedRows} = this.state;
@@ -136,6 +171,18 @@ class TableList extends PureComponent {
           )
         });
         if (cb) cb()
+        if(that.timer){
+          console.log('clearTimeout')
+          clearTimeout(that.timer)
+        }
+        that.timer=setTimeout(function () {
+          that.handleSearch({
+            page: that.state.page,
+            per_page: that.state.per_page,
+            number: that.state.number,
+            name: that.state.name,
+          });
+        },that.state.refresh_second*1000)
       }
     });
   }
@@ -342,9 +389,6 @@ class TableList extends PureComponent {
           dispatch(routerRedux.push(`/device/devices/info/information?id=${record.id}&&name=${record.name}`));
         }
       }}>
-        <Menu.Item key="history">
-          历史数据
-        </Menu.Item>
         <Menu.Item key="configs">
           设备配置
         </Menu.Item>
@@ -394,15 +438,19 @@ class TableList extends PureComponent {
         dataIndex: 'logined_at',
       },
       {
+        title: '应用名称',
+        dataIndex: 'device_type_name',
+      },
+      {
         title: '操作',
         render: (text, record) => (
           <Fragment>
             {/*<a onClick={() => this.handleUpdateModalVisible(true, record)}>配置</a>*/}
-            <Link to={`/device/devices/info/sensors?id=${record.id}&&name=${record.name}`}>数据采集</Link>
-            <Divider type="vertical"/>
             <Link to={`/device/devices/info/real_time?id=${record.id}&&name=${record.name}`}>实时数据</Link>
             <Divider type="vertical"/>
             <Link to={`/device/devices/info/valves?id=${record.id}&&name=${record.name}`}>阀门控制</Link>
+            <Divider type="vertical"/>
+            <Link to={`/device/devices/info/history?id=${record.id}&&name=${record.name}`}>历史数据</Link>
             <Divider type="vertical"/>
             <Dropdown overlay={itemMenu(record)}>
               <a >更多<Icon type="down"/></a>
@@ -414,6 +462,7 @@ class TableList extends PureComponent {
     const paginationProps = {
       showSizeChanger: true,
       showQuickJumper: true,
+      showTotal:total => `共 ${total} 项`,
       pageSize: meta.per_page,
       total: meta.total,
       current: this.state.page,
@@ -426,7 +475,11 @@ class TableList extends PureComponent {
     };
     return (
       <div>
-        <Card bordered={false}>
+        <PageHeader
+          style={{ margin: '-24px -24px 0' }}
+          title={'设备列表'}
+        />
+        <div className="info-page-container" >
           <div className={styles.tableList}>
             <div className={styles.tableListForm}>{this.renderForm()}</div>
             <div className={styles.tableListOperator}>
@@ -438,7 +491,9 @@ class TableList extends PureComponent {
                 新建设备
               </Button>
             </div>
+            <Alert  message={`数据每隔${this.state.refresh_second}秒刷新一次`} type="info"  />
             <Table
+              style={{backgroundColor:'#fff'}}
               className="custom-small-table"
               loading={loading}
               rowKey={'id'}
@@ -537,7 +592,7 @@ class TableList extends PureComponent {
                              wrappedComponentRef={(inst) => this.EditDevice = inst}/>
 
           </Modal>
-        </Card>
+        </div>
       </div>
     );
   }

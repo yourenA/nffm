@@ -1,4 +1,4 @@
-import { query,add,remove,edit ,editStatus,resetPassword } from '@/services/device_history_data';
+import { query,add,remove,edit ,editStatus,resetPassword,exportCSV } from '@/services/device_history_data';
 
 export default {
   namespace: 'device_history_data',
@@ -28,6 +28,13 @@ export default {
         if (callback) callback();
       }
 
+    },
+    *exportCSV({ payload, callback }, { call, put }) {
+      const response = yield call(exportCSV, payload);
+      console.log(response)
+      if(response.status===200){
+        if (callback) callback(response.data.data.download_key);
+      }
     },
     *reset({ payload }, { call, put }) {
       console.log('reset')

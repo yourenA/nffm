@@ -293,3 +293,18 @@ function renderIndex(meta, page, index) {
 }
 
 exports.renderIndex = renderIndex;
+
+export function download(url) {
+  let iframe = document.createElement('a')
+  // iframe.style.display = 'none'
+  // iframe.style.width = '150px'
+  // iframe.style.height = '150px'
+  iframe.href = url
+  // iframe.text = url
+  iframe.onload = function () {
+    console.log('onload')
+    document.body.removeChild(iframe)
+  }
+  document.body.appendChild(iframe)
+  iframe.click();
+}

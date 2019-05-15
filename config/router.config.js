@@ -29,6 +29,50 @@ export default [
         component: './Home/Index',
       },
       {
+        path: '/models',
+        name: '应用管理',
+        icon: 'apartment',
+        routes: [
+          {
+            path: '/models/device_model',
+            name: '应用列表',
+            // component: './Forms/StepForm',
+            hideChildrenInMenu: true,
+            routes: [
+              {
+                path: '/models/device_model',
+                name: '应用列表',
+                redirect: '/models/device_model/list',
+              },
+              {
+                path:'/models/device_model/list',
+                name: '应用列表',
+                component: './Device_types/Index',
+              },
+              {
+                path: '/models/device_model/info',
+                component: './Device_types/DeviceTypeInfo',
+                routes: [
+                  {
+                    path: '/models/device_model/info/sensors',
+                    name: '应用传感器',
+                    component: './Device_types/channels',
+                  },
+                  {
+                    path: '/models/device_model/info/views',
+                    name: '应用视图',
+                    component: './Device_types/Views',
+                  },
+
+                ]
+              },
+
+            ],
+          }
+        ],
+
+      },
+      {
         path: '/device',
         name: '设备管理',
         icon: 'dashboard',
@@ -63,11 +107,6 @@ export default [
                 path: '/device/devices/info',
                 component: './Devices-ignore/DeviceInfo',
                 routes: [
-                  {
-                    path: '/device/devices/info/sensors',
-                    name: '设备通道',
-                    component: './Devices-ignore/Channels',
-                  },
                   {
                     path: '/device/devices/info/history',
                     name: '设备历史数据',
@@ -110,7 +149,7 @@ export default [
           // },
         ],
       },
-      {
+   /*   {
         path: '/views',
         name: '视图管理',
         icon: 'eye',
@@ -185,7 +224,7 @@ export default [
           // },
         ],
 
-      },
+      },*/
       {
         path: '/system',
         name: '系统配置',

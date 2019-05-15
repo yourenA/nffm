@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import router from 'umi/router';
 import { connect } from 'dva';
 import { routerRedux } from 'dva/router';
-import { PageHeader,Tabs } from 'antd';
+import { PageHeader,Tabs,Breadcrumb } from 'antd';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 const TabPane = Tabs.TabPane;
 @connect()
@@ -23,8 +23,11 @@ class SearchList extends Component {
       activeKey:key
     })
     switch (key) {
-      case 'valves':
-        dispatch(routerRedux.replace(`/views/device_views/info/views?id=${this.id}&&name=${this.name}`));
+      case 'views':
+        dispatch(routerRedux.replace(`/models/device_model/info/views?id=${this.id}&&name=${this.name}`));
+        break;
+      case 'sensors':
+        dispatch(routerRedux.replace(`/models/device_model/info/sensors?id=${this.id}&&name=${this.name}`));
         break;
       default:
         break;
@@ -45,10 +48,14 @@ class SearchList extends Component {
       <PageHeader
         style={{ margin: '-24px -24px 0' }}
         onBack={() => this.props.history.goBack()}
-        title={this.name}
+        title={  <Breadcrumb>
+          <Breadcrumb.Item style={{cursor:'pointer'}} onClick={() => this.props.history.goBack()}>应用列表</Breadcrumb.Item>
+          <Breadcrumb.Item>{`${this.name}`}</Breadcrumb.Item>
+        </Breadcrumb>}
       />
         <Tabs activeKey={this.state.activeKey} onChange={this.handleTabChange}  style={{ margin: '0 -24px ' ,background:'#fff',paddingLeft:'24px'}} >
-          <TabPane tab="设备型号视图" key="views"></TabPane>
+          <TabPane tab="详细信息" key="sensors"></TabPane>
+          <TabPane tab="视图管理" key="views"></TabPane>
         </Tabs>
         {this.props.children}
 

@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import router from 'umi/router';
 import { connect } from 'dva';
-import { PageHeader,Badge,Table,Divider,Card,Button,Modal ,message   } from 'antd';
+import { PageHeader,Badge,Table,Divider,Card,Collapse,Modal ,message   } from 'antd';
 import EditConfigs from './EditConfigs'
+const Panel = Collapse.Panel;
 @connect(({configs, loading}) => ({
   configs,
 }))
@@ -81,7 +82,10 @@ class SearchList extends Component {
     ];
     return (
       <div>
-        <Card style={{marginTop:'24px'}}>
+        <div className="info-page-container" >
+          <Collapse activeKey={['1']}  style={{marginTop:'15px'}}>
+            <Panel showArrow={false} header={<div> 主题配置 </div>} key="1"
+            >
           <Table
             size='small'
             loading={loading}
@@ -90,7 +94,10 @@ class SearchList extends Component {
             columns={columns}
             pagination={false}
           />
-        </Card>
+            </Panel>
+
+          </Collapse>
+        </div>
         <Modal
           title={'编辑'+this.state.editRecord.name }
           destroyOnClose

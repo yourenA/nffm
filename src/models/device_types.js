@@ -1,4 +1,4 @@
-import { query } from '@/services/device_types';
+import { query,edit,add } from '@/services/device_types';
 
 export default {
   namespace: 'device_types',
@@ -28,6 +28,22 @@ export default {
         if (callback) callback();
       }
 
+    },
+    *add({ payload, callback }, { call, put }) {
+      const response = yield call(add, payload);
+
+      console.log(response)
+      if(response.status===200){
+        if (callback) callback();
+      }else{
+      }
+    },
+    *edit({ payload, callback }, { call, put }) {
+      const response = yield call(edit, payload);
+      console.log(response)
+      if(response.status===200){
+        if (callback) callback();
+      }
     },
   },
 

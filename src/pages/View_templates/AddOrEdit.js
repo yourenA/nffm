@@ -67,9 +67,7 @@ class SearchList extends Component {
           return false
         }
         for(let i=0;i<values.units.length;i++){
-          if(values.units[i]){
-            optional_data_units.push(values.units[i])
-          }
+          optional_data_units.push(values.units[i])
         }
         console.log('optional_data_units',optional_data_units)
         this.props.dispatch({
@@ -146,6 +144,7 @@ class SearchList extends Component {
             <Option value="Mpa">Mpa</Option>
             <Option value="Rpm">Rpm</Option>
             <Option value="W">W</Option>
+            <Option value="">无单位</Option>
           </Select>
         //  <Input placeholder="输入单位" style={{ width: '60%', marginRight: 8 }} />
         )}

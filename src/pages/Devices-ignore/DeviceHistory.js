@@ -1,14 +1,13 @@
 import React, {PureComponent} from 'react';
 import moment from 'moment';
 import {connect} from 'dva';
-import {Row, Col, Form, Card, Select, Tabs, Table, DatePicker, Divider, Checkbox, Tooltip} from 'antd';
+import {Row, Col, Form, Card, Select, Tabs, Table, DatePicker, Modal, Checkbox, Tooltip,Empty} from 'antd';
 import {Collapse, Button} from 'antd';
 import {routerRedux} from 'dva/router';
 import request from '@/utils/request';
-const Panel = Collapse.Panel;
-const TabPane = Tabs.TabPane;
-const {Option} = Select;
-const FormItem = Form.Item;
+import {download} from '@/utils/utils';
+import ExportData from './ExportForm'
+import config from '@/config/config'
 const CheckboxGroup = Checkbox.Group;
 
 
@@ -31,9 +30,12 @@ class CoverCardList extends PureComponent {
       date: moment(new Date(), 'YYYY-MM-DD'),
       sensor_numbers:[],
       sensors:[],
-      checkedList:[],
       indeterminate: false,
-      checkAll: false,
+      checkAll: true,
+
+      sensors_numbers_export:[],
+      indeterminateExport: false,
+      checkAllExport: true,
     }
   }
 
@@ -72,7 +74,6 @@ class CoverCardList extends PureComponent {
         }
         // console.log('date',date)
         let option = {
-          backgroundColor: '#eee',
           tooltip: {
             trigger: 'axis'
           },
@@ -87,10 +88,10 @@ class CoverCardList extends PureComponent {
           },
           yAxis: yAxis,
           grid: {
-            top: '20%',
+            top: '15%',
             left: '3%',
             right: '5%',
-            bottom: '1%',
+            bottom: '5%',
             containLabel: true
           },
           series: series
@@ -151,6 +152,14 @@ class CoverCardList extends PureComponent {
       this.handleSearch();
     });
   }
+  onChangeExport=(checkedList)=>{
+    console.log('checkedList',checkedList)
+    this.setState({
+      sensors_numbers_export:checkedList,
+      indeterminateExport: !!checkedList.length && (checkedList.length < this.state.sensors.length),
+      checkAllExport: checkedList.length === this.state.sensors.length,
+    });
+  }
   handleSearchSensors = ( cb) => {
     const that = this;
     const {dispatch} = this.props;
@@ -162,11 +171,14 @@ class CoverCardList extends PureComponent {
     }).then((response)=> {
       if (response.status === 200) {
         let channels=[]
+        let sensor_numbers=[]
         for(let i=0;i<response.data.data.channels.length;i++){
           channels.push({label:response.data.data.channels[i].name,value:response.data.data.channels[i].id})
+          sensor_numbers.push(response.data.data.channels[i].id)
         }
         that.setState({
-          sensors:channels
+          sensors:channels,
+          sensor_numbers
         })
       }
     })
@@ -187,7 +199,31 @@ class CoverCardList extends PureComponent {
       this.handleSearch();
     });
   }
-
+  onCheckAllChangeExport = (e) => {
+    this.setState({
+      sensors_numbers_export: e.target.checked ? this.state.sensors.reduce((pre,item)=>{pre.push(item.value);return pre},[]) : [],
+      indeterminateExport: false,
+      checkAllExport: e.target.checked,
+    });
+  }
+  handleExport=()=>{
+    const that=this;
+    const formValues = this.ExportData.props.form.getFieldsValue();
+    console.log('formValues', formValues)
+    this.props.dispatch({
+      type: 'device_history_data/exportCSV',
+      payload: {
+        device_id: that.props.history.location.query.id,
+        channel_ids:that.state.sensors_numbers_export,
+        started_at: moment(formValues.started_at).format('YYYY-MM-DD'),
+        ended_at: moment(formValues.ended_at).format('YYYY-MM-DD'),
+      },
+      callback: function (download_key) {
+        console.log('download',download_key)
+        download(`${config.prefix}/download?download_key=${download_key}`)
+      }
+    });
+  }
   render() {
     const {
       device_history_data: {data, loading},
@@ -228,16 +264,39 @@ class CoverCardList extends PureComponent {
 
           }
         >
-          <div style={{width: '100%', height: '200px'}} className={`history_chart_${index}`}></div>
+          <div className="chart">
+            <div style={{width: '100%', height: '250px'}} className={`history_chart_${index}`}>
+
+            </div>
+            <div className="chart_empty">
+              {dataSource.length===0&&<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+            </div>
+          </div>
+
        {/*   <Table size="small" rowKey="timestamp"  scroll={{ y: 140 }} columns={columns} dataSource={[...dataSource]} bordered={true} pagination={false}/>*/}
         </Card>
       </Col>
     })
     return (
       <div>
-        <Card bordered={false} style={{marginTop: '24px'}}>
-          <div style={{marginTop:'12px',marginBottom:'12px'}}>
-            <div  style={{paddingBottom:'12px',marginBottom:'12px',borderBottom: '1px solid #E9E9E9'}}>
+        <div className="info-page-container" >
+          <div  style={{marginTop:'12px',marginBottom:'12px'}}>
+            <div  style={{paddingBottom:'12px',marginBottom:'6px',borderBottom: '1px solid #E9E9E9'}}>
+              <Button onClick={()=>{
+                let sensors_numbers_export=[]
+                for(let i=0;i<this.state.sensors.length;i++){
+                  sensors_numbers_export.push(this.state.sensors[i].value)
+                }
+                console.log('sensors_numbers_export',sensors_numbers_export)
+                this.setState({
+                  sensors_numbers_export:sensors_numbers_export,
+
+                },function () {
+                  this.setState({
+                    exportModal:true
+                  })
+                })
+              }} type="primary" style={{float:'right'}}>导出数据</Button>
               <Checkbox
                 indeterminate={this.state.indeterminate}
                 onChange={this.onCheckAllChange}
@@ -264,7 +323,26 @@ class CoverCardList extends PureComponent {
                 {renderItem}
               </Row></div>
 
-        </Card>
+        </div>
+        <Modal
+          title={'导出历史数据' }
+          visible={this.state.exportModal}
+          centered
+          onOk={this.handleExport}
+          onCancel={()=> {
+            this.setState({exportModal: false})
+          }}
+        >
+          <ExportData
+            indeterminateExport={this.state.indeterminateExport}
+            onCheckAllChangeExport={this.onCheckAllChangeExport}
+            checkAllExport={this.state.checkAllExport}
+            sensors_numbers_export={this.state.sensors_numbers_export}
+            onChangeExport={this.onChangeExport}
+            options={this.state.sensors}
+            wrappedComponentRef={(inst) => this.ExportData = inst}/>
+
+        </Modal>
       </div>
     );
   }

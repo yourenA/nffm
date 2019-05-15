@@ -38,7 +38,7 @@ class CoverCardList extends PureComponent {
       views:[],
       views_ids:[],
       indeterminate: false,
-      checkAll: false,
+      checkAll: true,
     }
   }
 
@@ -59,11 +59,14 @@ class CoverCardList extends PureComponent {
           callback:()=>{
             const {views} =this.props
             let viewOptions=[]
+            let views_ids=[]
             for(let i=0;i<views.data.length;i++){
               viewOptions.push({label:views.data[i].name,value:views.data[i].id})
+              views_ids.push(views.data[i].id)
             }
             that.setState({
-              views:viewOptions
+              views:viewOptions,
+              views_ids
             })
           }
         });
@@ -117,7 +120,7 @@ class CoverCardList extends PureComponent {
           let date=[]
 
           for(let j=0;j<data[i].columns.length;j++){
-            legend.push(data[i].columns[j].name);
+            legend.push(`${data[i].columns[j].name}(${data[i].columns[j].data_unit})`);
             // yAxis.push({
             //   type: 'value',
             //   offset:j>1?30*(j-1):0,
@@ -133,10 +136,13 @@ class CoverCardList extends PureComponent {
               yAxis.push({
                 type: 'value',
                 name:  data[i].columns[j].data_unit ,
+                splitLine: {
+                  show: false
+                }
               });
             }
             series.push({
-              name: data[i].columns[j].name,
+              name: `${data[i].columns[j].name}(${data[i].columns[j].data_unit})`,
               type: 'line',
               data:  data[i].columns[j].data.reduce((pre,item)=>{pre.push(item.value);return pre},[]).reverse(),
               yAxisIndex: findIndex(yAxis,(o)=>{return o.name===data[i].columns[j].data_unit}),
@@ -161,7 +167,6 @@ class CoverCardList extends PureComponent {
           // console.log('date',date)
           let option = {
             color: colors,
-            backgroundColor: '#eee',
             tooltip: {
               trigger: 'axis',
             },
@@ -176,10 +181,10 @@ class CoverCardList extends PureComponent {
             },
             yAxis: yAxis,
             grid: {
-              top: '20%',
-              left: '3%',
+              top: '15%',
+              left: '2%',
               right: '3%',
-              bottom: '1%',
+              bottom: '2%',
               containLabel: true
             },
             series: series
@@ -213,6 +218,7 @@ class CoverCardList extends PureComponent {
         } = that.props;
         that.dynamic(data);
         if(that.timer){
+          console.log('clearTimeout')
           clearTimeout(that.timer)
         }
         that.timer=setTimeout(function () {
@@ -309,6 +315,9 @@ class CoverCardList extends PureComponent {
               <span>{item.columns[i].name + `${item.columns[i].data_unit ? '(' + item.columns[i].data_unit + ')' : ''}`}</span>
             </Tooltip> ,
             dataIndex: item.columns[i].name,
+            render:(text,record)=>{
+              return record[item.columns[i].name+'_status']===1?text:<span style={{color:'red'}}>{text}</span>
+            }
           })
         }else{
           columns.push({
@@ -317,6 +326,9 @@ class CoverCardList extends PureComponent {
             </Tooltip> ,
             width:`${1/(item.columns.length+1)*100}%`,
             dataIndex: item.columns[i].name,
+            render:(text,record)=>{
+              return record[item.columns[i].name+'_status']===1?text:<span style={{color:'red'}}>{text}</span>
+            }
           })
         }
 
@@ -346,13 +358,13 @@ class CoverCardList extends PureComponent {
           }
         >
               <div style={{width: '100%', height: '200px'}} className={`real_time_chart_${index}`}></div>
-              <Table size="small" rowKey="timestamp"   scroll={{ y: 140 }} columns={columns} dataSource={data} bordered={true} pagination={false}/>
+              <Table size="small" rowKey="timestamp"   scroll={{ y: 145 }} columns={columns} dataSource={data} bordered={true} pagination={false}/>
         </Card>
       </Col>
     })
     return (
       <div>
-        <Card bordered={false} style={{marginTop: '24px'}}>
+        <div className="info-page-container" >
           <div><Row  gutter={12}>
             <Alert style={{margin:'6px'}} message={`数据每隔${this.state.refresh_second}秒刷新一次; 显示最新${this.state.display_rows}条数据`} type="info"  />
             <div  style={{margin:'6px',paddingBottom:'12px',marginBottom:'12px',borderBottom: '1px solid #E9E9E9'}}>
@@ -369,7 +381,7 @@ class CoverCardList extends PureComponent {
             {renderItem}
           </Row></div>
 
-        </Card>
+        </div>
       </div>
     );
   }
