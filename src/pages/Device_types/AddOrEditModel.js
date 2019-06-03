@@ -34,6 +34,9 @@ class SearchList extends Component {
       }
     })
   }
+  geModels=()=>{
+    return this.state.models
+  }
   render() {
     const {device_types}=this.props
     const {getFieldDecorator, getFieldValue} = this.props.form;

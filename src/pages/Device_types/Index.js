@@ -250,7 +250,6 @@ class TableList extends PureComponent {
     const {
       device_types: {data, loading, meta},
     } = this.props;
-    const { dispatch } = this.props;
     const columns = [
       {
         title: '编号',
@@ -348,6 +347,7 @@ class TableList extends PureComponent {
           >
             <AddOrEditModel
               editRecord={this.state.editRecord}
+              ref={(ins)=>this.editModel=ins}
               wrappedComponentRef={(inst) => this.EditModel = inst}/>
 
           </Modal>

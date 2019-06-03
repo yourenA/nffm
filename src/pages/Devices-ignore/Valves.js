@@ -182,9 +182,9 @@ class SearchList extends Component {
                   </DescriptionList>
                   <DescriptionList  size="small" col="4" >
                     <Description term="over"> {data.over} Mpa</Description>
-                    <Description term="over_recover"> {data.over_recover} Mpa</Description>
+                    <Description term="overRecover"> {data.over_recover} Mpa</Description>
+                    <Description term="underRecover"> {data.under_recover} Mpa</Description>
                     <Description term="under"> {data.under} Mpa</Description>
-                    <Description term="under_recover"> {data.under_recover} Mpa</Description>
                   </DescriptionList>
                 </div>
               }
