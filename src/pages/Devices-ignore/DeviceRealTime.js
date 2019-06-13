@@ -50,11 +50,10 @@ class CoverCardList extends PureComponent {
       method: 'GET',
     }).then((response)=> {
       if (response.status === 200) {
-        const device_type_id=response.data.data.device_type_id
         dispatch({
           type: 'views/fetch',
           payload: {
-            device_types_id:device_type_id
+            devices_id:that.props.history.location.query.id
           },
           callback:()=>{
             const {views} =this.props
@@ -109,7 +108,7 @@ class CoverCardList extends PureComponent {
     setTimeout(function () {
 
       for (let i = 0; i < data.length; i++) {
-        if(data[i].columns.length){
+        if(data[i].parameters.length){
           let colors =['#c23531','#2f4554', '#61a0a8', '#d48265', '#91c7ae','#749f83',  '#ca8622', '#bda29a','#6e7074', '#546570', '#c4ccd3']
           that['myChart' + i] = that.echarts.init(document.querySelector(`.real_time_chart_${i}`));
           that.myChart.push(that['myChart' + i]);
@@ -119,37 +118,37 @@ class CoverCardList extends PureComponent {
           let series=[]
           let date=[]
 
-          for(let j=0;j<data[i].columns.length;j++){
-            legend.push(`${data[i].columns[j].name}(${data[i].columns[j].data_unit})`);
+          for(let j=0;j<data[i].parameters.length;j++){
+            legend.push(`${data[i].parameters[j].name}(${data[i].parameters[j].data_unit})`);
             // yAxis.push({
             //   type: 'value',
             //   offset:j>1?30*(j-1):0,
-            //   name:  data[i].columns[j].name ,
+            //   name:  data[i].parameters[j].name ,
             //   axisLine: {
             //     lineStyle: {
-            //       color: colors[(j%data[i].columns.length)]
+            //       color: colors[(j%data[i].parameters.length)]
             //     }
             //   },
             // });
-            const unitExit=find(yAxis,(o)=>{return o.name===data[i].columns[j].data_unit})
+            const unitExit=find(yAxis,(o)=>{return o.name===data[i].parameters[j].data_unit})
             if(!unitExit){
               yAxis.push({
                 type: 'value',
-                name:  data[i].columns[j].data_unit ,
+                name:  data[i].parameters[j].data_unit ,
                 splitLine: {
                   show: false
                 }
               });
             }
             series.push({
-              name: `${data[i].columns[j].name}(${data[i].columns[j].data_unit})`,
+              name: `${data[i].parameters[j].name}(${data[i].parameters[j].data_unit})`,
               type: 'line',
-              data:  data[i].columns[j].data.reduce((pre,item)=>{pre.push(item.value);return pre},[]).reverse(),
-              yAxisIndex: findIndex(yAxis,(o)=>{return o.name===data[i].columns[j].data_unit}),
+              data:  data[i].parameters[j].data.reduce((pre,item)=>{pre.push(item.value);return pre},[]).reverse(),
+              yAxisIndex: findIndex(yAxis,(o)=>{return o.name===data[i].parameters[j].data_unit}),
               smooth: true,
             });
             dataSource.push({
-              [ data[i].columns[j].name]:data[i].columns[j].data
+              [ data[i].parameters[j].name]:data[i].parameters[j].data
             })
           }
           let parseData=that.transformData(dataSource);
@@ -302,38 +301,38 @@ class CoverCardList extends PureComponent {
       const columns = [{
         title: '时间',
         dataIndex: 'timestamp',
-        width:`${1/(item.columns.length+1)*100}%`,
+        width:`${1/(item.parameters.length+1)*100}%`,
         render:(text)=>{
         return moment(text).format('MM-DD HH:mm:ss')
       }
       }];
       const dataSource = []
-      for (let i = 0; i < item.columns.length; i++) {
-        if(i===item.columns.length-1){
+      for (let i = 0; i < item.parameters.length; i++) {
+        if(i===item.parameters.length-1){
           columns.push({
-            title: <Tooltip title={item.columns[i].alias + `${item.columns[i].data_unit ? '(' + item.columns[i].data_unit + ')' : ''}`}>
-              <span>{item.columns[i].name + `${item.columns[i].data_unit ? '(' + item.columns[i].data_unit + ')' : ''}`}</span>
+            title: <Tooltip title={item.parameters[i].alias + `${item.parameters[i].data_unit ? '(' + item.parameters[i].data_unit + ')' : ''}`}>
+              <span>{item.parameters[i].name + `${item.parameters[i].data_unit ? '(' + item.parameters[i].data_unit + ')' : ''}`}</span>
             </Tooltip> ,
-            dataIndex: item.columns[i].name,
+            dataIndex: item.parameters[i].name,
             render:(text,record)=>{
-              return record[item.columns[i].name+'_status']===1?text:<span style={{color:'red'}}>{text}</span>
+              return record[item.parameters[i].name+'_status']===1?text:<span style={{color:'red'}}>{text}</span>
             }
           })
         }else{
           columns.push({
-            title: <Tooltip title={item.columns[i].alias + `${item.columns[i].data_unit ? '(' + item.columns[i].data_unit + ')' : ''}`}>
-              <span>{item.columns[i].name + `${item.columns[i].data_unit ? '(' + item.columns[i].data_unit + ')' : ''}`}</span>
+            title: <Tooltip title={item.parameters[i].alias + `${item.parameters[i].data_unit ? '(' + item.parameters[i].data_unit + ')' : ''}`}>
+              <span>{item.parameters[i].name + `${item.parameters[i].data_unit ? '(' + item.parameters[i].data_unit + ')' : ''}`}</span>
             </Tooltip> ,
-            width:`${1/(item.columns.length+1)*100}%`,
-            dataIndex: item.columns[i].name,
+            width:`${1/(item.parameters.length+1)*100}%`,
+            dataIndex: item.parameters[i].name,
             render:(text,record)=>{
-              return record[item.columns[i].name+'_status']===1?text:<span style={{color:'red'}}>{text}</span>
+              return record[item.parameters[i].name+'_status']===1?text:<span style={{color:'red'}}>{text}</span>
             }
           })
         }
 
         dataSource.push({
-          [item.columns[i].name]:item.columns[i].data
+          [item.parameters[i].name]:item.parameters[i].data
         })
 
       }

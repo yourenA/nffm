@@ -8,9 +8,9 @@ export async function query({...resetParams}) {
 }
 
 
-export async function edit(payload) {
-  return request(`/devices/${payload.device_id}/valves`, {
-    method: 'PUT',
+export async function edit({device_id,valve_id,...payload}) {
+  return request(`/devices/${device_id}/double_ball_valves/${valve_id}/status`, {
+    method: 'POST',
     data: {
       ...payload,
     },

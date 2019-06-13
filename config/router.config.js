@@ -29,6 +29,64 @@ export default [
         component: './Home/Index',
       },
       {
+        path: '/collectors',
+        name: '采集器管理',
+        icon: 'apartment',
+        routes: [
+          {
+            path: '/collectors/collectors_list',
+            name: '采集器列表',
+            // component: './Forms/StepForm',
+            hideChildrenInMenu: true,
+            routes: [
+              {
+                path: '/collectors/collectors_list',
+                name: '采集器列表',
+                redirect: '/collectors/collectors_list/list',
+              },
+              {
+                path:'/collectors/collectors_list/list',
+                name: '采集器列表',
+                component: './Collectors/Index',
+              },
+              {
+                path: '/collectors/collectors_list/info',
+                component: './Collectors/CollectorsInfo',
+                routes: [
+                  {
+                    path: '/collectors/collectors_list/info/parameters',
+                    name: '采集器参数',
+                    component: './Collectors/Parameters',
+                  },
+                  {
+                    path: '/collectors/collectors_list/info/config',
+                    name: '采集器配置',
+                    component: './Collectors/Configs',
+                  },
+                  {
+                    path: '/collectors/collectors_list/info/information',
+                    name: '采集器信息',
+                    component: './Collectors/Information',
+                  },
+                  {
+                    path: '/collectors/collectors_list/info/mqtt_logs',
+                    name: '通讯日志',
+                    component: './Collectors/MqttLogs',
+                  },
+                  {
+                    path: '/collectors/collectors_list/info/login_logs',
+                    name: '登陆日志',
+                    component: './Collectors/LoginLogs',
+                  },
+                ]
+              },
+
+            ],
+          }
+        ],
+
+      },
+ /*     {
         path: '/models',
         name: '应用管理',
         icon: 'apartment',
@@ -71,7 +129,7 @@ export default [
           }
         ],
 
-      },
+      },*/
       {
         path: '/device',
         name: '设备管理',
@@ -123,14 +181,14 @@ export default [
                     component: './Devices-ignore/Valves',
                   },
                   {
-                    path: '/device/devices/info/information',
-                    name: '阀门控制',
-                    component: './Devices-ignore/Information',
+                    path: '/device/devices/info/parameters',
+                    name: '设备参数',
+                    component: './Devices-ignore/DeviceParameters',
                   },
                   {
-                    path: '/device/devices/info/configs',
-                    name: '设备配置',
-                    component: './Devices-ignore/Configs',
+                    path: '/device/devices/info/views',
+                    name: '设备视图',
+                    component: './Devices-ignore/Views',
                   },
                 ]
               },

@@ -3,7 +3,6 @@ import router from 'umi/router';
 import { connect } from 'dva';
 import request from '@/utils/request';
 import { PageHeader,Badge,Table,Divider,Card,Button,Alert ,Collapse   } from 'antd';
-import AddOrEditSensors from './AddOrEditSensor'
 import DescriptionList from '@/components/DescriptionList';
 import find from 'lodash/find'
 const Panel = Collapse.Panel;
@@ -35,7 +34,7 @@ class SearchList extends Component {
       callback:()=>{
         const {system_configs}=that.props
         const refresh_second=find(system_configs.data,function (o) {
-          return o.key==='device_info_refresh_time'
+          return o.key==='collector_info_refresh_time'
         })
         console.log('refresh_second',refresh_second)
 
@@ -47,6 +46,13 @@ class SearchList extends Component {
           })
         }
       }
+    });
+    request(`/collectors/${that.props.history.location.query.id}/mqtt_account`, {
+      method: 'GET',
+    }).then((response)=> {
+      that.setState({
+        mqttInfo: response.data.data,
+      })
     });
     // this.handleSearch()
   }
@@ -76,13 +82,7 @@ class SearchList extends Component {
         },that.state.refresh_second*1000)
       }
     });
-    request(`/devices/${that.props.history.location.query.id}/mqtt_account`, {
-      method: 'GET',
-    }).then((response)=> {
-      that.setState({
-        mqttInfo: response.data.data,
-      })
-    });
+
   }
   render() {
     const {
@@ -102,7 +102,7 @@ class SearchList extends Component {
       <div>
         <div className="info-page-container" >
           <Collapse activeKey={['1']}  style={{marginTop:'15px'}}>
-            <Panel showArrow={false} header={<div> 设备信息 </div>} key="1"
+            <Panel showArrow={false} header={<div> 采集器信息 </div>} key="1"
             >
               <Alert  message={`数据每隔${this.state.refresh_second}秒刷新一次`} type="info"  />
           <Table

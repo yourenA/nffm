@@ -26,7 +26,7 @@ import {
   Table
 } from 'antd';
 import DescriptionList from '@/components/DescriptionList';
-import styles from './TableList.less';
+import styles from './Index.less';
 import AddOrEditDevice from './AddOrEditDevice2'
 import find from 'lodash/find'
 const FormItem = Form.Item;
@@ -43,8 +43,8 @@ const statusMap = ['default', 'processing', 'success', 'error'];
 const status = ['关闭', '运行中', '已上线', '异常'];
 
 /* eslint react/no-multi-comp:0 */
-@connect(({devices, loading,system_configs}) => ({
-  devices,system_configs
+@connect(({collectors, loading,system_configs}) => ({
+  collectors,system_configs
 }))
 @Form.create()
 class TableList extends PureComponent {
@@ -97,9 +97,29 @@ class TableList extends PureComponent {
         name: '',
       }
     }
-
     const that=this;
-    that.handleSearch(params)
+    const {dispatch} = this.props;
+    dispatch({
+      type: 'system_configs/fetch',
+      payload: {
+
+      },
+      callback:()=>{
+        const {system_configs}=that.props
+        const refresh_second=find(system_configs.data,function (o) {
+          return o.key==='collector_info_refresh_time'
+        })
+        console.log('refresh_second',refresh_second)
+
+        if(refresh_second){
+          that.setState({
+            refresh_second:Number(refresh_second.value),
+          },function () {
+            that.handleSearch(params)
+          })
+        }
+      }
+    });
 
   }
   componentWillUnmount() {
@@ -138,7 +158,7 @@ class TableList extends PureComponent {
     const that = this;
     const {dispatch} = this.props;
     dispatch({
-      type: 'devices/fetch',
+      type: 'collectors/fetch',
       payload: {
         ...values,
       },
@@ -147,10 +167,22 @@ class TableList extends PureComponent {
         that.setState({
           ...values,
         },function () {
-          dispatch(routerRedux.replace(`/device/devices/list?name=${encodeURI(this.state.name)}&number=${encodeURI(this.state.number)}&page=${this.state.page}&per_page=${this.state.per_page}`)
+          dispatch(routerRedux.replace(`/collectors/collectors_list/list?name=${encodeURI(this.state.name)}&number=${encodeURI(this.state.number)}&page=${this.state.page}&per_page=${this.state.per_page}`)
           )
         });
         if (cb) cb()
+        if(that.timer){
+          console.log('clearTimeout')
+          clearTimeout(that.timer)
+        }
+        that.timer=setTimeout(function () {
+          that.handleSearch({
+            page: that.state.page,
+            per_page: that.state.per_page,
+            number: that.state.number,
+            name: that.state.name,
+          });
+        },that.state.refresh_second*1000)
       }
     });
   }
@@ -173,12 +205,12 @@ class TableList extends PureComponent {
       <Form layout="inline">
         <Row gutter={{md: 8, lg: 24, xl: 48}}>
           <Col md={8} sm={24}>
-            <FormItem label="设备编号">
+            <FormItem label="编号">
               {getFieldDecorator('number')(<Input placeholder="请输入"/>)}
             </FormItem>
           </Col>
           <Col md={8} sm={24}>
-            <FormItem label="设备名称">
+            <FormItem label="名称">
               {getFieldDecorator('name')(<Input placeholder="请输入"/>)}
             </FormItem>
           </Col>
@@ -222,10 +254,10 @@ class TableList extends PureComponent {
     const that = this;
     const {dispatch} = this.props;
     dispatch({
-      type: 'devices/remove',
+      type: 'collectors/remove',
       payload: {id},
       callback: ()=> {
-        message.success('删除设备成功')
+        message.success('删除采集器成功')
         that.handleSearch({
           page: that.state.page,
           per_page: that.state.per_page,
@@ -238,7 +270,7 @@ class TableList extends PureComponent {
   resetItem = id=> {
     const {dispatch} = this.props;
     dispatch({
-      type: 'devices/resetPassword',
+      type: 'collectors/resetPassword',
       payload: {id},
       callback: ()=> {
         message.success('重置设备密码成功')
@@ -256,13 +288,13 @@ class TableList extends PureComponent {
     console.log('formValues', formValues)
     const that = this;
     this.props.dispatch({
-      type: 'devices/edit',
+      type: 'collectors/edit',
       payload: {
         ...formValues,
         id: this.state.editRecord.id,
       },
       callback: function () {
-        message.success('修改设备成功')
+        message.success('修改采集器成功')
         that.setState({
           editModal: false,
         });
@@ -280,12 +312,12 @@ class TableList extends PureComponent {
     console.log('formValues', formValues)
     const that = this;
     this.props.dispatch({
-      type: 'devices/add',
+      type: 'collectors/add',
       payload: {
         ...formValues,
       },
       callback: function () {
-        message.success('新建设备成功')
+        message.success('新建采集器成功')
         that.setState({
           addModal: false,
         });
@@ -300,7 +332,7 @@ class TableList extends PureComponent {
   }
   getMqttInfo = (id)=> {
     const that = this;
-    request(`/devices/${id}/mqtt_account`, {
+    request(`/collectors/${id}/mqtt_account`, {
       method: 'GET',
     }).then((response)=> {
       that.setState({
@@ -312,7 +344,7 @@ class TableList extends PureComponent {
 
   render() {
     const {
-      devices: {data, loading, meta},
+      collectors: {data, loading, meta},
     } = this.props;
     const { dispatch } = this.props;
     const menu = (
@@ -343,24 +375,20 @@ class TableList extends PureComponent {
         if (e.key === 'mqtt') {
           this.getMqttInfo(record.id)
         }
-        if (e.key === 'views') {
+        if (e.key === 'view') {
           dispatch(routerRedux.push(`/device/devices/info/views?id=${record.id}&&name=${record.name}`));
         }
         if (e.key === 'history') {
           dispatch(routerRedux.push(`/device/devices/info/history?id=${record.id}&&name=${record.name}`));
 
         }
-        if (e.key === 'history') {
-          dispatch(routerRedux.push(`/device/devices/info/history?id=${record.id}&&name=${record.name}`));
+        if (e.key === 'configs') {
+          dispatch(routerRedux.push(`/device/devices/info/configs?id=${record.id}&&name=${record.name}`));
         }
-
+        if (e.key === 'info') {
+          dispatch(routerRedux.push(`/device/devices/info/information?id=${record.id}&&name=${record.name}`));
+        }
       }}>
-        <Menu.Item key="history">
-          历史数据
-        </Menu.Item>
-        <Menu.Item key="views">
-          设备视图
-        </Menu.Item>
         <Menu.Item key="edit">
           编辑
         </Menu.Item>
@@ -371,7 +399,7 @@ class TableList extends PureComponent {
     );
     const columns = [
       {
-        title: '设备编号',
+        title: '编号',
         dataIndex: 'number',
         render(val, record, index){
           return <p className="primary_text" onClick={()=> {
@@ -389,28 +417,36 @@ class TableList extends PureComponent {
         }
       },
       {
-        title: '设备名称',
+        title: '名称',
         dataIndex: 'name',
       },
       {
-        title: '备注',
-        dataIndex: 'remark',
+        title: '状态',
+        dataIndex: 'is_online',
+        render(val) {
+          return <Badge status={val === 1 ? 'success' : 'error'} text={val === 1 ? '在线' : '离线'}/>;
+        },
+      },
+      {
+        title: '登录时间',
+        dataIndex: 'logined_at',
+      },
+      {
+        title: '类型',
+        dataIndex: 'collector_type_name',
       },
       {
         title: '操作',
         render: (text, record) => (
           <Fragment>
             {/*<a onClick={() => this.handleUpdateModalVisible(true, record)}>配置</a>*/}
-            <Link to={`/device/devices/info/real_time?id=${record.id}&&name=${record.name}`}>实时数据</Link>
+            <Link to={`/collectors/collectors_list/info/parameters?id=${record.id}&&name=${record.name}`}>采集器参数</Link>
             <Divider type="vertical"/>
-            {
-              record.services.indexOf('valve_control')>=0&&<span>
-                <Link to={`/device/devices/info/valves?id=${record.id}&&name=${record.name}`}>阀门控制</Link>
+            <Link to={`/collectors/collectors_list/info/config?id=${record.id}&&name=${record.name}`}>采集器配置</Link>
             <Divider type="vertical"/>
-              </span>
-            }
-            <Link to={`/device/devices/info/parameters?id=${record.id}&&name=${record.name}`}>设备参数/球阀</Link>
+            <Link to={`/collectors/collectors_list/info/information?id=${record.id}&&name=${record.name}`}>采集器信息</Link>
             <Divider type="vertical"/>
+
             <Dropdown overlay={itemMenu(record)}>
               <a >更多<Icon type="down"/></a>
             </Dropdown>
@@ -436,7 +472,7 @@ class TableList extends PureComponent {
       <div>
         <PageHeader
           style={{ margin: '-24px -24px 0' }}
-          title={'设备列表'}
+          title={'采集器列表'}
         />
         <div className="info-page-container" >
           <div className={styles.tableList}>
@@ -447,9 +483,10 @@ class TableList extends PureComponent {
                   addModal:true
                 })}
               }>
-                新建设备
+                新建采集器
               </Button>
             </div>
+            <Alert  message={`数据每隔${this.state.refresh_second}秒刷新一次`} type="info"  />
             <Table
               style={{backgroundColor:'#fff'}}
               className="custom-small-table"
@@ -489,7 +526,42 @@ class TableList extends PureComponent {
 
           </Modal>
           <Modal
-            title={'新建设备'}
+            title={'MQTT详情'}
+            destroyOnClose
+            visible={this.state.mqttModal}
+            footer={null}
+            centered
+            width={700}
+            onCancel={()=> {
+              this.setState({mqttModal: false})
+            }}
+          >
+            <div >
+              <DescriptionList className={styles.headerList} size="small" col="2">
+                <Description term="用户名"> {this.state.mqttInfo.username}</Description>
+                <Description term="密码"> {this.state.mqttInfo.password}</Description>
+
+              </DescriptionList>
+              {
+                this.state.mqttInfo.topics && this.state.mqttInfo.topics.map((item, index)=> {
+
+                  return(
+                    <div style={{marginTop:'10px'}} key={index}>
+                      <DescriptionList className={styles.headerList} size="small" col="3" >
+                        <Description term="主题名称"> {item.name}</Description>
+                        <Description term="是否允许发布"> {item.allow_publish === 1 ? '是' : '否'}</Description>
+                        <Description term="是否允许订阅"> {item.allow_subscribe === 1 ? '是' : '否'}</Description>
+                      </DescriptionList>
+                    </div>
+
+                    )
+                })
+              }
+            </div>
+
+          </Modal>
+          <Modal
+            title={'新建采集器'}
             visible={this.state.addModal}
             centered
             onCancel={()=> {

@@ -2,8 +2,6 @@ import React, {Component} from 'react';
 import {connect} from 'dva';
 import request from '@/utils/request';
 import {PageHeader, Input, Table, Form, Card, Button, Col, Select, message, Row,Tooltip,Badge} from 'antd';
-import styles from './TableList.less';
-import findIndex from 'lodash/findIndex'
 const FormItem = Form.Item;
 const Option = Select.Option;
 const TextArea = Input.TextArea
@@ -16,12 +14,28 @@ class SearchList extends Component {
     super(props);
     this.state = {
       id: 0,
-      channels: [],
-      editChannels:{}
+      models: [],
     }
   }
 
   componentDidMount() {
+
+    const that = this;
+    const {dispatch} = this.props;
+    request(`/devices`, {
+      params: {
+      },
+      method: 'GET',
+    }).then((response)=> {
+      if (response.status === 200) {
+        that.setState({
+          models:response.data.data
+        })
+      }
+    })
+  }
+  geModels=()=>{
+    return this.state.models
   }
   render() {
     const {device_types}=this.props
@@ -39,24 +53,24 @@ class SearchList extends Component {
     return (
       <div>
           <Form  onSubmit={this.handleSubmit} >
-            <Form.Item label="设备编号" {...formItemLayout}>
-              {getFieldDecorator(`number`, {
-                initialValue:this.props.editRecord ? this.props.editRecord.number : '',
-                rules: [{required: true, message: '请输入设备编号'}],
+            <Form.Item label="编号" {...formItemLayout}>
+              {getFieldDecorator(`model`, {
+                initialValue:this.props.editRecord ? this.props.editRecord.model : '',
+                rules: [{required: true, message: '请输入名称'}],
               })(
                 <Input disabled={this.props.editRecord?true:false}/>
 
               )}
             </Form.Item>
-            <Form.Item label="设备名称"  {...formItemLayout}>
+            <Form.Item label="名称" {...formItemLayout}>
               {getFieldDecorator(`name`, {
-                initialValue: this.props.editRecord ? this.props.editRecord.name : '',
-                rules: [{required: true, message: '请输入设备名称'}],
+                initialValue:this.props.editRecord ? this.props.editRecord.name : '',
+                rules: [{required: true, message: '请输入名称'}],
               })(
                 <Input />
+
               )}
             </Form.Item>
-
             <Form.Item label="备注" {...formItemLayout}>
               {getFieldDecorator(`remark`, {
                 initialValue: this.props.editRecord ? this.props.editRecord.remark : '',

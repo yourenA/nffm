@@ -2,13 +2,11 @@ import React, {Component} from 'react';
 import {connect} from 'dva';
 import request from '@/utils/request';
 import {PageHeader, Input, Table, Form, Card, Button, Col, Select, message, Row,Tooltip,Badge} from 'antd';
-import styles from './TableList.less';
-import findIndex from 'lodash/findIndex'
 const FormItem = Form.Item;
 const Option = Select.Option;
 const TextArea = Input.TextArea
-@connect(({device_types, loading}) => ({
-  device_types,
+@connect(({collector_types, loading}) => ({
+  collector_types,
 }))
 @Form.create()
 class SearchList extends Component {
@@ -22,9 +20,17 @@ class SearchList extends Component {
   }
 
   componentDidMount() {
+
+    const that = this;
+    const {dispatch} = this.props;
+    dispatch({
+      type: 'collector_types/fetch',
+      payload: {
+      },
+    });
   }
   render() {
-    const {device_types}=this.props
+    const {collector_types}=this.props
     const {getFieldDecorator, getFieldValue} = this.props.form;
     const formItemLayout = {
       labelCol: {
@@ -39,23 +45,36 @@ class SearchList extends Component {
     return (
       <div>
           <Form  onSubmit={this.handleSubmit} >
-            <Form.Item label="设备编号" {...formItemLayout}>
+            <Form.Item label="编号" {...formItemLayout}>
               {getFieldDecorator(`number`, {
                 initialValue:this.props.editRecord ? this.props.editRecord.number : '',
-                rules: [{required: true, message: '请输入设备编号'}],
+                rules: [{required: true, message: '请输入编号'}],
               })(
                 <Input disabled={this.props.editRecord?true:false}/>
 
               )}
             </Form.Item>
-            <Form.Item label="设备名称"  {...formItemLayout}>
+            <Form.Item label="名称"  {...formItemLayout}>
               {getFieldDecorator(`name`, {
                 initialValue: this.props.editRecord ? this.props.editRecord.name : '',
-                rules: [{required: true, message: '请输入设备名称'}],
+                rules: [{required: true, message: '请输入名称'}],
               })(
                 <Input />
               )}
             </Form.Item>
+            <FormItem
+              required={true}
+              label='类型'
+              {...formItemLayout}
+            >
+              {getFieldDecorator('collector_type_id', {
+                initialValue: this.props.editRecord ? this.props.editRecord.collector_type_id : '',
+              })(
+                <Select onChange={this.changeType}  disabled={this.props.editRecord?true:false}>
+                  { collector_types.data.map(item => <Option key={item.id} value={item.id}>{item.name}</Option>) }
+                </Select>
+              )}
+            </FormItem>
 
             <Form.Item label="备注" {...formItemLayout}>
               {getFieldDecorator(`remark`, {

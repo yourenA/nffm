@@ -44,7 +44,7 @@ class SearchList extends Component {
         [that.state.editRecord.key]:formValues.value
       },
       callback: function () {
-        message.success('修改设备配置成功')
+        message.success('修改采集器配置成功')
         that.setState({
           editModal: false,
         });

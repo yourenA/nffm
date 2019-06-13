@@ -16,7 +16,8 @@ class SearchList extends Component {
     console.log('pathname',pathname)
     this.state={
       activeKey:pathname[pathname.length-1],
-      number:''
+      number:'',
+      showValve:false
     }
   }
   componentDidMount() {
@@ -25,7 +26,8 @@ class SearchList extends Component {
       method: 'GET',
     }).then((response)=> {
       that.setState({
-        number:response.data.data.number
+        number:response.data.data.number,
+        showValve:response.data.data.services.indexOf('valve_control')>=0?true:false
       })
     })
   }
@@ -53,8 +55,11 @@ class SearchList extends Component {
       case 'information':
         dispatch(routerRedux.replace(`/device/devices/info/information?id=${this.id}&&name=${this.name}`));
         break;
-      case 'configs':
-        dispatch(routerRedux.replace(`/device/devices/info/configs?id=${this.id}&&name=${this.name}`));
+      case 'parameters':
+        dispatch(routerRedux.replace(`/device/devices/info/parameters?id=${this.id}&&name=${this.name}`));
+        break;
+      case 'views':
+        dispatch(routerRedux.replace(`/device/devices/info/views?id=${this.id}&&name=${this.name}`));
         break;
       default:
         break;
@@ -83,10 +88,12 @@ class SearchList extends Component {
       />
         <Tabs activeKey={this.state.activeKey} onChange={this.handleTabChange}  style={{ margin: '0 -24px ' ,background:'#fff',paddingLeft:'24px'}} >
           <TabPane tab="设备实时数据" key="real_time"></TabPane>
-          <TabPane tab="阀门控制" key="valves"></TabPane>
-          <TabPane tab="传感器历史数据" key="history"></TabPane>
-          <TabPane tab="主题配置" key="configs"></TabPane>
-          <TabPane tab="设备信息" key="information"></TabPane>
+          {
+            this.state.showValve&& <TabPane tab="阀门控制" key="valves"></TabPane>
+          }
+          <TabPane tab="设备参数/球阀" key="parameters"></TabPane>
+          <TabPane tab="历史数据" key="history"></TabPane>
+          <TabPane tab="设备视图" key="views"></TabPane>
         </Tabs>
         {this.props.children}
 
