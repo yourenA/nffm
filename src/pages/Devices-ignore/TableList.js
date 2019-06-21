@@ -353,6 +353,9 @@ class TableList extends PureComponent {
         if (e.key === 'history') {
           dispatch(routerRedux.push(`/device/devices/info/history?id=${record.id}&&name=${record.name}`));
         }
+        if (e.key === 'error') {
+          dispatch(routerRedux.push(`/device/devices/info/error?id=${record.id}&&name=${record.name}`));
+        }
 
       }}>
         <Menu.Item key="history">
@@ -361,6 +364,11 @@ class TableList extends PureComponent {
         <Menu.Item key="views">
           设备视图
         </Menu.Item>
+        {
+          record.services.indexOf('error')>=0&&<Menu.Item key="error">
+            故障信息
+          </Menu.Item>
+        }
         <Menu.Item key="edit">
           编辑
         </Menu.Item>

@@ -189,6 +189,21 @@ class SearchList extends Component {
         dataIndex: 'remark',
       },
     ];
+    const columns4 = [
+      // {
+      //  title: '已存在通道编号',
+      //   dataIndex: 'number',
+      // },
+      {
+        title: '名称',
+        dataIndex: 'name',
+        width:'20%'
+      },
+      {
+        title: '备注',
+        dataIndex: 'remark',
+      },
+    ];
     return (
       <div>
         <div className="info-page-container">
@@ -203,7 +218,7 @@ class SearchList extends Component {
             >
               <Table
                 size='small'
-                rowKey={'number'}
+                rowKey={'id'}
                 dataSource={data.sensor||[]}
                 columns={columns}
                 pagination={false}
@@ -216,9 +231,23 @@ class SearchList extends Component {
             >
               <Table
                 size='small'
-                rowKey={'number'}
+                rowKey={'id'}
                 dataSource={data.generator||[]}
                 columns={columns2}
+                pagination={false}
+              />
+            </Panel>
+
+          </Collapse>
+
+          <Collapse activeKey={['1']}  style={{marginTop:'15px'}}>
+            <Panel showArrow={false} header={<div><Icon type="box-plot"/> 阀门信息 </div>} key="1"
+            >
+              <Table
+                size='small'
+                rowKey={'id'}
+                dataSource={data.valve||[]}
+                columns={columns3}
                 pagination={false}
               />
             </Panel>
@@ -229,7 +258,7 @@ class SearchList extends Component {
             >
               <Table
                 size='small'
-                rowKey={'number'}
+                rowKey={'id'}
                 dataSource={data.water_meter||[]}
                 columns={columns2}
                 pagination={false}
@@ -238,13 +267,13 @@ class SearchList extends Component {
 
           </Collapse>
           <Collapse activeKey={['1']}  style={{marginTop:'15px'}}>
-            <Panel showArrow={false} header={<div><Icon type="box-plot"/> 阀门信息 </div>} key="1"
+            <Panel showArrow={false} header={<div><Icon type="box-plot"/> 故障信息 </div>} key="1"
             >
               <Table
                 size='small'
-                rowKey={'number'}
-                dataSource={data.valve||[]}
-                columns={columns3}
+                rowKey={'id'}
+                dataSource={data.error||[]}
+                columns={columns4}
                 pagination={false}
               />
             </Panel>

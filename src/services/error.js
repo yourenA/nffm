@@ -1,5 +1,13 @@
 import request from '@/utils/request';
 
-export default async function queryError(code) {
-  return request(`/api/${code}`);
+
+export async function query({...resetParams}) {
+  return request(`/devices/${resetParams.device_id}/errors`,{
+    method:'GET',
+    params:{
+      ...resetParams
+    }
+  });
 }
+
+

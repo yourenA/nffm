@@ -190,6 +190,11 @@ export default [
                     name: '设备视图',
                     component: './Devices-ignore/Views',
                   },
+                  {
+                    path: '/device/devices/info/error',
+                    name: '故障信息',
+                    component: './Devices-ignore/DeviceError',
+                  },
                 ]
               },
 

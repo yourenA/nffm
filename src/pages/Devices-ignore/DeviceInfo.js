@@ -17,7 +17,8 @@ class SearchList extends Component {
     this.state={
       activeKey:pathname[pathname.length-1],
       number:'',
-      showValve:false
+      showValve:false,
+      showError:false
     }
   }
   componentDidMount() {
@@ -27,7 +28,8 @@ class SearchList extends Component {
     }).then((response)=> {
       that.setState({
         number:response.data.data.number,
-        showValve:response.data.data.services.indexOf('valve_control')>=0?true:false
+        showValve:response.data.data.services.indexOf('valve_control')>=0?true:false,
+        showError:response.data.data.services.indexOf('error')>=0?true:false
       })
     })
   }
@@ -58,8 +60,8 @@ class SearchList extends Component {
       case 'parameters':
         dispatch(routerRedux.replace(`/device/devices/info/parameters?id=${this.id}&&name=${this.name}`));
         break;
-      case 'views':
-        dispatch(routerRedux.replace(`/device/devices/info/views?id=${this.id}&&name=${this.name}`));
+      case 'error':
+        dispatch(routerRedux.replace(`/device/devices/info/error?id=${this.id}&&name=${this.name}`));
         break;
       default:
         break;
@@ -94,6 +96,10 @@ class SearchList extends Component {
           <TabPane tab="设备参数/球阀" key="parameters"></TabPane>
           <TabPane tab="历史数据" key="history"></TabPane>
           <TabPane tab="设备视图" key="views"></TabPane>
+          {
+            this.state.showError&&  <TabPane tab="故障信息" key="error"></TabPane>
+          }
+
         </Tabs>
         {this.props.children}
 

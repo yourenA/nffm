@@ -62,6 +62,9 @@ class SearchList extends Component {
         if(response.data.data.water_meter){
           parameters=parameters.concat(response.data.data.water_meter)
         }
+        if(response.data.data.error){
+          parameters=parameters.concat(response.data.data.error)
+        }
         console.log('parameters',parameters)
         that.setState({
           parameters
