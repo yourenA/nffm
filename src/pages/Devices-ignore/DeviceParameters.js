@@ -19,8 +19,8 @@ import styles from './TableList.less';
 const FormItem = Form.Item;
 const Panel = Collapse.Panel;
 /* eslint react/no-multi-comp:0 */
-@connect(({device_parameters,double_ball_valves, loading}) => ({
-  device_parameters,double_ball_valves
+@connect(({device_parameters,double_ball_valves,electric_valves, loading}) => ({
+  device_parameters,double_ball_valves,electric_valves
 }))
 @Form.create()
 class TableList extends PureComponent {
@@ -32,6 +32,7 @@ class TableList extends PureComponent {
    this.handleSearch({
       });
     this.handleSearchValves()
+    this.handleSearchElectricValves()
   }
 
 
@@ -55,6 +56,20 @@ class TableList extends PureComponent {
     const {dispatch} = this.props;
     dispatch({
       type: 'double_ball_valves/fetch',
+      payload: {
+        device_id:this.props.history.location.query.id,
+        ...values,
+      },
+      callback: function () {
+        console.log('handleSearch callback')
+        if (cb) cb()
+      }
+    });
+  }
+  handleSearchElectricValves = (values, cb) => {
+    const {dispatch} = this.props;
+    dispatch({
+      type: 'electric_valves/fetch',
       payload: {
         device_id:this.props.history.location.query.id,
         ...values,
@@ -115,6 +130,28 @@ class TableList extends PureComponent {
       }
     });
   }
+  handleAddElectricValve=()=>{
+    const formValues = this.AddElectricValve.props.form.getFieldsValue();
+    console.log('formValues', formValues)
+    const {
+      device_parameters: {data},
+    } = this.props;
+    const that = this;
+    this.props.dispatch({
+      type: 'electric_valves/add',
+      payload: {
+        device_id:this.props.history.location.query.id,
+        ...formValues
+      },
+      callback: function () {
+        message.success('添加成功')
+        that.setState({
+          addElectricModal: false,
+        });
+        that.handleSearchElectricValves()
+      }
+    });
+  }
   handleRemove=(index)=>{
     const that=this
     const {
@@ -157,9 +194,26 @@ class TableList extends PureComponent {
       }
     });
   }
+  handleRemoveElectricValve=(record)=>{
+    const that=this
+    this.props.dispatch({
+      type: 'electric_valves/remove',
+      payload: {
+        device_id:this.props.history.location.query.id,
+        valve_id:record.id
+      },
+      callback: function () {
+        message.success('删除成功')
+        that.setState({
+          addValveModal: false,
+        });
+        that.handleSearchElectricValves()
+      }
+    });
+  }
   render() {
     const {
-      device_parameters: {data, loading, meta},double_ball_valves
+      device_parameters: {data, loading, meta},double_ball_valves,electric_valves
     } = this.props;
     const columns = [
       {
@@ -207,18 +261,8 @@ class TableList extends PureComponent {
         dataIndex: 'index',
       },
       {
-        title: '增压球阀名称/所属采集器编号',
-        dataIndex: 'increment_valve',
-        render: (text, record,index) => {
-          return `${text.name}/${text.collector_number}`
-        }
-      },
-      {
-        title: '减压球阀名称/所属采集器编号',
-        dataIndex: 'decrement_valve',
-        render: (text, record,index) => {
-          return `${text.name}/${text.collector_number}`
-        }
+        title: '所属采集器编号',
+        dataIndex: 'collector_number',
       },
       {
         title: '操作',
@@ -226,6 +270,33 @@ class TableList extends PureComponent {
           return <Fragment>
             <Popconfirm title={'确定要删除吗?'}
                         onConfirm={()=>this.handleRemoveValve(record)}>
+              <a >删除</a>
+            </Popconfirm>
+
+          </Fragment>
+        }
+      },
+
+    ];
+    const electric_valves_columns= [
+      {
+        title: '名称',
+        dataIndex: 'name',
+      },
+      {
+        title: '序号',
+        dataIndex: 'index',
+      },
+      {
+        title: '所属采集器编号',
+        dataIndex: 'collector_number',
+      },
+      {
+        title: '操作',
+        render: (text, record,index) => {
+          return <Fragment>
+            <Popconfirm title={'确定要删除吗?'}
+                        onConfirm={()=>this.handleRemoveElectricValve(record)}>
               <a >删除</a>
             </Popconfirm>
 
@@ -277,6 +348,26 @@ class TableList extends PureComponent {
             </Panel>
 
           </Collapse>
+          <Collapse activeKey={['2']}  style={{marginTop:'15px'}}>
+            <Panel showArrow={false} header={<div> 电控阀门管理 <Button style={{float: 'right'}} type='primary' size="small"
+                                                                onClick={()=> {
+                                                                  this.setState({
+                                                                    addElectricModal: true
+                                                                  })
+                                                                }}>添加电控阀门</Button></div>} key="2"
+            >
+              <Table
+                style={{backgroundColor:'#fff'}}
+                loading={electric_valves.loading}
+                rowKey={'id'}
+                dataSource={electric_valves.data}
+                columns={electric_valves_columns}
+                size="small"
+                pagination={false}
+              />
+            </Panel>
+
+          </Collapse>
           <Modal
             title={'绑定参数'}
             visible={this.state.addModal}
@@ -301,6 +392,21 @@ class TableList extends PureComponent {
           >
             <AddValve
               wrappedComponentRef={(inst) => this.AddValve = inst}/>
+
+          </Modal>
+          <Modal
+            title={'添加电控阀门'}
+            visible={this.state.addElectricModal}
+            centered
+            onCancel={()=> {
+              this.setState({addElectricModal: false})
+            }}
+            onOk={this.handleAddElectricValve}
+          >
+            <AddValve
+              type={"AddElectricValve"}
+
+              wrappedComponentRef={(inst) => this.AddElectricValve = inst}/>
 
           </Modal>
         </div>

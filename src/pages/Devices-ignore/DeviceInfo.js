@@ -18,7 +18,8 @@ class SearchList extends Component {
       activeKey:pathname[pathname.length-1],
       number:'',
       showValve:false,
-      showError:false
+      showError:false,
+      showElectricValve:false
     }
   }
   componentDidMount() {
@@ -28,7 +29,8 @@ class SearchList extends Component {
     }).then((response)=> {
       that.setState({
         number:response.data.data.number,
-        showValve:response.data.data.services.indexOf('valve_control')>=0?true:false,
+        showValve:response.data.data.services.indexOf('double_ball_valve_control')>=0?true:false,
+        showElectricValve:response.data.data.services.indexOf('electric_valve_control')>=0?true:false,
         showError:response.data.data.services.indexOf('error')>=0?true:false
       })
     })
@@ -63,6 +65,9 @@ class SearchList extends Component {
       case 'error':
         dispatch(routerRedux.replace(`/device/devices/info/error?id=${this.id}&&name=${this.name}`));
         break;
+      case 'electric_valves':
+        dispatch(routerRedux.replace(`/device/devices/info/electric_valves?id=${this.id}&&name=${this.name}`));
+        break;
       default:
         break;
     }
@@ -90,10 +95,13 @@ class SearchList extends Component {
       />
         <Tabs activeKey={this.state.activeKey} onChange={this.handleTabChange}  style={{ margin: '0 -24px ' ,background:'#fff',paddingLeft:'24px'}} >
           <TabPane tab="设备实时数据" key="real_time"></TabPane>
+          <TabPane tab="设备参数/阀门" key="parameters"></TabPane>
           {
             this.state.showValve&& <TabPane tab="阀门控制" key="valves"></TabPane>
           }
-          <TabPane tab="设备参数/球阀" key="parameters"></TabPane>
+          {
+            this.state.showElectricValve&& <TabPane tab="电控阀门控制" key="electric_valves"></TabPane>
+          }
           <TabPane tab="历史数据" key="history"></TabPane>
           <TabPane tab="设备视图" key="views"></TabPane>
           {

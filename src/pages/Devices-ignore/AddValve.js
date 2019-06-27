@@ -95,7 +95,7 @@ class SearchList extends Component {
               })(
                 <Select  >
                   <Option value="1">1</Option>
-                  <Option value="2">2</Option>
+                  {this.props.type!=="AddElectricValve"&& <Option value="2">2</Option>}
                 </Select>
               )}
             </FormItem>
@@ -104,15 +104,15 @@ class SearchList extends Component {
               label='采集器'
               {...formItemLayout}
             >
-              {getFieldDecorator('collector', {
+              {getFieldDecorator('collector_id', {
                 initialValue:  '',
               })(
-                <Select showSearch onChange={this.changeCollector} >
-                  { this.state.collectors.map(item => <Option key={item.id} value={item.number}>{item.number}</Option>) }
+                <Select showSearch  >
+                  { this.state.collectors.map(item => <Option key={item.id} value={item.id}>{item.number}</Option>) }
                 </Select>
               )}
             </FormItem>
-            <FormItem
+       {/*     <FormItem
               required={true}
               label='增压球阀'
               {...formItemLayout}
@@ -137,7 +137,7 @@ class SearchList extends Component {
                   { this.state.parameters.map(item => <Option key={item.id} value={item.id}>{item.name}</Option>) }
                 </Select>
               )}
-            </FormItem>
+            </FormItem>*/}
           </Form>
 
       </div>

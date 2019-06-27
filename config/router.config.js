@@ -195,6 +195,11 @@ export default [
                     name: '故障信息',
                     component: './Devices-ignore/DeviceError',
                   },
+                  {
+                    path: '/device/devices/info/electric_valves',
+                    name: '故障信息',
+                    component: './Devices-ignore/ElectricValve',
+                  },
                 ]
               },
 

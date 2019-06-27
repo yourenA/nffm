@@ -411,14 +411,20 @@ class TableList extends PureComponent {
             {/*<a onClick={() => this.handleUpdateModalVisible(true, record)}>配置</a>*/}
             <Link to={`/device/devices/info/real_time?id=${record.id}&&name=${record.name}`}>实时数据</Link>
             <Divider type="vertical"/>
+            <Link to={`/device/devices/info/parameters?id=${record.id}&&name=${record.name}`}>设备参数/阀门</Link>
+            <Divider type="vertical"/>
             {
-              record.services.indexOf('valve_control')>=0&&<span>
+              record.services.indexOf('double_ball_valve_control')>=0&&<span>
                 <Link to={`/device/devices/info/valves?id=${record.id}&&name=${record.name}`}>阀门控制</Link>
             <Divider type="vertical"/>
               </span>
             }
-            <Link to={`/device/devices/info/parameters?id=${record.id}&&name=${record.name}`}>设备参数/球阀</Link>
+            {
+              record.services.indexOf('electric_valve_control')>=0&&<span>
+                <Link to={`/device/devices/info/electric_valves?id=${record.id}&&name=${record.name}`}>电控阀门控制</Link>
             <Divider type="vertical"/>
+              </span>
+            }
             <Dropdown overlay={itemMenu(record)}>
               <a >更多<Icon type="down"/></a>
             </Dropdown>

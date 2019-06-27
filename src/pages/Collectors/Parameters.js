@@ -246,7 +246,20 @@ class SearchList extends Component {
               <Table
                 size='small'
                 rowKey={'id'}
-                dataSource={data.valve||[]}
+                dataSource={data.double_ball_valve||[]}
+                columns={columns3}
+                pagination={false}
+              />
+            </Panel>
+
+          </Collapse>
+          <Collapse activeKey={['1']}  style={{marginTop:'15px'}}>
+            <Panel showArrow={false} header={<div><Icon type="box-plot"/> 电控阀门信息 </div>} key="1"
+            >
+              <Table
+                size='small'
+                rowKey={'id'}
+                dataSource={data.electric_valve||[]}
                 columns={columns3}
                 pagination={false}
               />

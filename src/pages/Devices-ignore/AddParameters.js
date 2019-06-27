@@ -50,21 +50,27 @@ class SearchList extends Component {
     }).then(function (response) {
       if(response.status===200){
         let parameters=[]
-        if(response.data.data.valve){
-          parameters=parameters.concat(response.data.data.valve)
+        for(let key in response.data.data){
+          parameters=parameters.concat(response.data.data[key])
         }
-        if(response.data.data.generator){
-          parameters=parameters.concat(response.data.data.generator)
-        }
-        if(response.data.data.sensor){
-          parameters=parameters.concat(response.data.data.sensor)
-        }
-        if(response.data.data.water_meter){
-          parameters=parameters.concat(response.data.data.water_meter)
-        }
-        if(response.data.data.error){
-          parameters=parameters.concat(response.data.data.error)
-        }
+        // if(response.data.data.double_ball_valve){
+        //   parameters=parameters.concat(response.data.data.double_ball_valve)
+        // }
+        // if(response.data.data.electric_valve){
+        //   parameters=parameters.concat(response.data.data.electric_valve)
+        // }
+        // if(response.data.data.generator){
+        //   parameters=parameters.concat(response.data.data.generator)
+        // }
+        // if(response.data.data.sensor){
+        //   parameters=parameters.concat(response.data.data.sensor)
+        // }
+        // if(response.data.data.water_meter){
+        //   parameters=parameters.concat(response.data.data.water_meter)
+        // }
+        // if(response.data.data.error){
+        //   parameters=parameters.concat(response.data.data.error)
+        // }
         console.log('parameters',parameters)
         that.setState({
           parameters
