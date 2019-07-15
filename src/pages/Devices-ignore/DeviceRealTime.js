@@ -310,7 +310,7 @@ class CoverCardList extends PureComponent {
       for (let i = 0; i < item.parameters.length; i++) {
         if(i===item.parameters.length-1){
           columns.push({
-            title: <Tooltip title={item.parameters[i].alias + `${item.parameters[i].data_unit ? '(' + item.parameters[i].data_unit + ')' : ''}`}>
+            title: <Tooltip title={item.parameters[i].remark + `${item.parameters[i].data_unit ? '(' + item.parameters[i].data_unit + ')' : ''}`}>
               <span>{item.parameters[i].name + `${item.parameters[i].data_unit ? '(' + item.parameters[i].data_unit + ')' : ''}`}</span>
             </Tooltip> ,
             dataIndex: item.parameters[i].name,
@@ -320,7 +320,7 @@ class CoverCardList extends PureComponent {
           })
         }else{
           columns.push({
-            title: <Tooltip title={item.parameters[i].alias + `${item.parameters[i].data_unit ? '(' + item.parameters[i].data_unit + ')' : ''}`}>
+            title: <Tooltip title={item.parameters[i].remark + `${item.parameters[i].data_unit ? '(' + item.parameters[i].data_unit + ')' : ''}`}>
               <span>{item.parameters[i].name + `${item.parameters[i].data_unit ? '(' + item.parameters[i].data_unit + ')' : ''}`}</span>
             </Tooltip> ,
             width:`${1/(item.parameters.length+1)*100}%`,

@@ -36,7 +36,6 @@ class SearchList extends Component {
         sm: {span: 14},
       }
     };
-    console.log('props,',this.props)
     return (
       <div>
           <Form  onSubmit={this.handleSubmit} >

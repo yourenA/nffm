@@ -49,7 +49,6 @@ class TableList extends PureComponent {
           parameter_id:response.data.data[0].id
         },function () {
           this.handleSearch({
-            parameter_id:that.state.parameter_id,
             page: 1,
             per_page: 30,
             started_at:moment().format('YYYY-MM-DD'),
@@ -87,7 +86,6 @@ class TableList extends PureComponent {
     form.resetFields();
     this.handleSearch({
       page: 1,
-      status:'1',
       started_at:moment().format('YYYY-MM-DD'),
       ended_at:moment().format('YYYY-MM-DD'),
       per_page: 30
@@ -111,7 +109,7 @@ class TableList extends PureComponent {
               {getFieldDecorator('ended_at',{ initialValue: moment() })(<DatePicker  format="YYYY-MM-DD" />)}
             </FormItem>
           </Col>
-          <Col md={7} sm={24}>
+         {/* <Col md={7} sm={24}>
             <FormItem label="参数">
               {getFieldDecorator('parameter_id',{ initialValue: this.state.parameter_id })(
                 <Select >
@@ -123,7 +121,7 @@ class TableList extends PureComponent {
                 </Select >
               )}
             </FormItem>
-          </Col>
+          </Col>*/}
           <Col md={6} sm={24}>
             <span className={styles.submitButtons}>
               <Button type="primary" onClick={()=> {
@@ -132,7 +130,6 @@ class TableList extends PureComponent {
                   if (err) return;
 
                   const values = {
-                    parameter_id:fieldsValue.parameter_id,
                     started_at:fieldsValue.started_at.format('YYYY-MM-DD'),
                     ended_at:fieldsValue.ended_at.format('YYYY-MM-DD'),
                   };
@@ -177,12 +174,13 @@ class TableList extends PureComponent {
       columns.push({
         title: item.name,
         dataIndex: `column-${index}`,
+        className:'text-center',
         render:(text,record)=>{
           if(text===1){
             return <Icon type="check" style={{color:"#52c41a"}}/>
           }
           if(text===-1){
-            return <Icon type="close" />
+            return ''
           }
           return text
         }
@@ -211,11 +209,11 @@ class TableList extends PureComponent {
       current: this.state.page,
       onChange: (page, pageSize)=> {
         this.handleSearch({page, per_page: pageSize,started_at:this.state.started_at,
-          ended_at:this.state.ended_at,status:this.state.status, parameter_id:this.state.parameter_id,})
+          ended_at:this.state.ended_at,status:this.state.status})
       },
       onShowSizeChange: (page, pageSize)=> {
         this.handleSearch({page, per_page: pageSize,started_at:this.state.started_at,
-          ended_at:this.state.ended_at,status:this.state.status, parameter_id:this.state.parameter_id})
+          ended_at:this.state.ended_at,status:this.state.status})
       },
     };
     return (
@@ -234,6 +232,7 @@ class TableList extends PureComponent {
               </Button>
             </div>*/}
             <Table
+              className={'error-table'}
               style={{backgroundColor:'#fff'}}
               loading={loading}
               rowKey={'timestamp'}

@@ -20,13 +20,8 @@ import {
   message ,
   Select,
 } from 'antd';
+import request from '@/utils/request';
 
-
-const FormItem = Form.Item;
-const RadioButton = Radio.Button;
-const RadioGroup = Radio.Group;
-const SelectOption = Select.Option;
-const {Search, TextArea} = Input;
 
 @connect(({user_manage, loading}) => ({
 }))
@@ -39,6 +34,11 @@ class BasicList extends PureComponent {
     per_page: 30
   };
 
+  componentDidMount() {
+    request(`/users`,{
+      method:'GET',
+    })
+  }
 
 
   render() {

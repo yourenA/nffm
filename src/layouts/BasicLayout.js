@@ -105,6 +105,7 @@ class BasicLayout extends React.PureComponent {
     dispatch({
       type: 'setting/getSetting',
     });
+    // this.handleMenuCollapse(true);
     this.renderRef = requestAnimationFrame(() => {
       this.setState({
         rendering: false,
@@ -126,8 +127,12 @@ class BasicLayout extends React.PureComponent {
     this.breadcrumbNameMap = this.getBreadcrumbNameMap();
     const { isMobile } = this.state;
     const { collapsed } = this.props;
+    console.log('componentDidUpdate')
     if (isMobile && !preProps.isMobile && !collapsed) {
       this.handleMenuCollapse(false);
+    }else{
+
+
     }
   }
 
@@ -210,6 +215,7 @@ class BasicLayout extends React.PureComponent {
   };
 
   handleMenuCollapse = collapsed => {
+    console.log('handleMenuCollapse',collapsed)
     const { dispatch } = this.props;
     dispatch({
       type: 'global/changeLayoutCollapsed',
@@ -235,6 +241,7 @@ class BasicLayout extends React.PureComponent {
             logo={logo}
             Authorized={Authorized}
             theme={navTheme}
+            collapsedWidth={60}
             onCollapse={this.handleMenuCollapse}
             menuData={menuData}
             isMobile={isMobile}

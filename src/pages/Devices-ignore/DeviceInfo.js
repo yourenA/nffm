@@ -27,12 +27,14 @@ class SearchList extends Component {
     request(`/devices/${this.id}`, {
       method: 'GET',
     }).then((response)=> {
-      that.setState({
-        number:response.data.data.number,
-        showValve:response.data.data.services.indexOf('double_ball_valve_control')>=0?true:false,
-        showElectricValve:response.data.data.services.indexOf('electric_valve_control')>=0?true:false,
-        showError:response.data.data.services.indexOf('error')>=0?true:false
-      })
+      if (response.status === 200) {
+        that.setState({
+          number:response.data.data.number,
+          showValve:response.data.data.services.indexOf('double_ball_valve_control')>=0?true:false,
+          showElectricValve:response.data.data.services.indexOf('electric_valve_control')>=0?true:false,
+          showError:response.data.data.services.indexOf('error')>=0?true:false
+        })
+      }
     })
   }
   handleTabChange = (key) => {
@@ -68,6 +70,9 @@ class SearchList extends Component {
       case 'electric_valves':
         dispatch(routerRedux.replace(`/device/devices/info/electric_valves?id=${this.id}&&name=${this.name}`));
         break;
+      case 'real_time_error':
+        dispatch(routerRedux.replace(`/device/devices/info/real_time_error?id=${this.id}&&name=${this.name}`));
+        break;
       default:
         break;
     }
@@ -95,7 +100,7 @@ class SearchList extends Component {
       />
         <Tabs activeKey={this.state.activeKey} onChange={this.handleTabChange}  style={{ margin: '0 -24px ' ,background:'#fff',paddingLeft:'24px'}} >
           <TabPane tab="设备实时数据" key="real_time"></TabPane>
-          <TabPane tab="设备参数/阀门" key="parameters"></TabPane>
+          <TabPane tab="设备配置" key="parameters"></TabPane>
           {
             this.state.showValve&& <TabPane tab="阀门控制" key="valves"></TabPane>
           }
@@ -105,7 +110,10 @@ class SearchList extends Component {
           <TabPane tab="历史数据" key="history"></TabPane>
           <TabPane tab="设备视图" key="views"></TabPane>
           {
-            this.state.showError&&  <TabPane tab="故障信息" key="error"></TabPane>
+            this.state.showError&&  <TabPane tab="故障监测" key="real_time_error"></TabPane>
+          }
+          {
+            this.state.showError&&  <TabPane tab="故障查询" key="error"></TabPane>
           }
 
         </Tabs>

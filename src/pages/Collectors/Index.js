@@ -382,13 +382,19 @@ class TableList extends PureComponent {
           dispatch(routerRedux.push(`/device/devices/info/history?id=${record.id}&&name=${record.name}`));
 
         }
-        if (e.key === 'configs') {
-          dispatch(routerRedux.push(`/device/devices/info/configs?id=${record.id}&&name=${record.name}`));
+        if (e.key === 'mqtt_logs') {
+          dispatch(routerRedux.push(`/collectors/collectors_list/info/mqtt_logs?id=${record.id}&&name=${record.name}`));
         }
-        if (e.key === 'info') {
-          dispatch(routerRedux.push(`/device/devices/info/information?id=${record.id}&&name=${record.name}`));
+        if (e.key === 'login_logs') {
+          dispatch(routerRedux.push(`/collectors/collectors_list/info/login_logs?id=${record.id}&&name=${record.name}`));
         }
       }}>
+        <Menu.Item key="mqtt_logs">
+          通讯日志
+        </Menu.Item>
+        <Menu.Item key="login_logs">
+          登录日志
+        </Menu.Item>
         <Menu.Item key="edit">
           编辑
         </Menu.Item>

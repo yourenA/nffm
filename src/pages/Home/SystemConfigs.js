@@ -87,7 +87,7 @@ class SearchList extends Component {
           <Table
             size='small'
             loading={loading}
-            rowKey={'id'}
+            rowKey={'name'}
             dataSource={data}
             columns={columns}
             pagination={false}

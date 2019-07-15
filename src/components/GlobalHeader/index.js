@@ -13,12 +13,15 @@ export default class GlobalHeader extends PureComponent {
   @Debounce(600)
   triggerResizeEvent() {
     // eslint-disable-line
+    console.log('resize')
     const event = document.createEvent('HTMLEvents');
     event.initEvent('resize', true, false);
     window.dispatchEvent(event);
   }
   toggle = () => {
+
     const { collapsed, onCollapse } = this.props;
+    console.log('toggle')
     onCollapse(!collapsed);
     this.triggerResizeEvent();
   };

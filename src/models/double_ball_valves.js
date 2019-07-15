@@ -1,4 +1,4 @@
-import { query,add,remove } from '@/services/double_ball_valves';
+import { query,add,remove,edit } from '@/services/double_ball_valves';
 
 export default {
   namespace: 'double_ball_valves',
@@ -31,6 +31,15 @@ export default {
     },
     *add({ payload, callback }, { call, put }) {
       const response = yield call(add, payload);
+
+      console.log(response)
+      if(response.status===200){
+        if (callback) callback();
+      }else{
+      }
+    },
+    *edit({ payload, callback }, { call, put }) {
+      const response = yield call(edit, payload);
 
       console.log(response)
       if(response.status===200){

@@ -209,20 +209,21 @@ class SearchList extends Component {
         <div className="info-page-container">
           <Collapse activeKey={['1']}>
             <Panel showArrow={false}
-                   header={<div><Icon type="box-plot"/> 传感器 <Button style={{float: 'right'}} type='primary' size="small"
+                   header={<div><Icon type="box-plot"/> 传感器 {/*<Button style={{float: 'right'}} type='primary' size="small"
                                                                     onClick={()=> {
                                                                       this.setState({
                                                                         addModal: true
                                                                       })
-                                                                    }}>添加</Button></div>} key="1"
+                                                                    }}>添加</Button>*/}</div>} key="1"
             >
-              <Table
+              <h3>该采集器共有{data.sensor?data.sensor.length:'0'}个传感器</h3>
+           {/*   <Table
                 size='small'
                 rowKey={'id'}
                 dataSource={data.sensor||[]}
                 columns={columns}
                 pagination={false}
-              />
+              />*/}
             </Panel>
 
           </Collapse>

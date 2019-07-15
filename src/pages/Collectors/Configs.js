@@ -1,23 +1,43 @@
 import React, { Component } from 'react';
 import router from 'umi/router';
 import { connect } from 'dva';
-import { PageHeader,Badge,Table,Divider,Card,Collapse,Modal ,message   } from 'antd';
+import { Alert,Badge,Table,Divider,Card,Collapse,Modal ,message   } from 'antd';
 import EditConfigs from './EditConfigs'
+import find from 'lodash/find'
 const Panel = Collapse.Panel;
-@connect(({configs, loading}) => ({
-  configs,
+@connect(({configs,system_configs, loading}) => ({
+  configs,system_configs
 }))
 class SearchList extends Component {
   constructor(props) {
     super(props);
+    this.timer = null;
     this.state = {
       editRecord:{},
       targetKeys: [],
       selectedKeys: [],
+      refresh_second: 0,
     };
   }
   componentDidMount() {
-    this.handleSearch()
+    const that = this;
+    const {dispatch} = this.props;
+    dispatch({
+      type: 'system_configs/fetch',
+      callback: ()=> {
+        const {system_configs}=that.props
+        const refresh_second = find(system_configs.data, function (o) {
+          return o.key === 'collector_config_refresh_time'
+        })
+        if (refresh_second) {
+          that.setState({
+            refresh_second: Number(refresh_second.value),
+          }, function () {
+            that.handleSearch()
+          })
+        }
+      }
+    });
   }
   handleSearch = ( cb) => {
     const that = this;
@@ -28,10 +48,23 @@ class SearchList extends Component {
         device_id:that.props.history.location.query.id
       },
       callback: function () {
-        if (cb) cb()
+        if (that.timer) {
+          console.log('clearTimeout')
+          clearTimeout(that.timer)
+        }
+        that.timer = setTimeout(function () {
+          that.handleSearch();
+        }, that.state.refresh_second * 1000)
       }
 
     });
+  }
+  componentWillUnmount() {
+    console.log('componentWillUnmount')
+    if(this.timer){
+      console.log(this.timer)
+    }
+    clearTimeout(this.timer)
   }
   handleEdit = ()=> {
     const formValues = this.editConfig.props.form.getFieldsValue();
@@ -84,19 +117,21 @@ class SearchList extends Component {
       <div>
         <div className="info-page-container" >
           <Collapse activeKey={['1']}  style={{marginTop:'15px'}}>
-            <Panel showArrow={false} header={<div> 主题配置 </div>} key="1"
+            <Panel showArrow={false} header={<div> 采集器信息 </div>} key="1"
             >
-          <Table
-            size='small'
-            loading={loading}
-            rowKey={'key'}
-            dataSource={data.filter((o)=>o.key!=='server_address')}
-            columns={columns}
-            pagination={false}
-          />
-            </Panel>
+              <Alert   message={`数据每隔${this.state.refresh_second}秒刷新一次`} type="info"  />
+              <Table
+                size='small'
+                loading={loading}
+                rowKey={'key'}
+                dataSource={data.filter((o)=>o.key!=='server_address')}
+                columns={columns}
+                pagination={false}
+              />
+              </Panel>
 
           </Collapse>
+
         </div>
         <Modal
           title={'编辑'+this.state.editRecord.name }

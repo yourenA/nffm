@@ -1,7 +1,7 @@
-import { query,add,remove,edit } from '@/services/electric_valves';
+import { query,add ,remove,edit} from '@/services/device_errors';
 
 export default {
-  namespace: 'electric_valves',
+  namespace: 'device_errors',
   state: {
     data:[],
     meta: {total: 0, per_page: 0},
@@ -9,17 +9,17 @@ export default {
 
   },
   effects: {
-    *fetch({ payload,callback }, { call, put }) {
+    *fetch({payload, callback}, {call, put}) {
       yield put({
         type: 'changeLoading',
         payload: true,
       });
       const response = yield call(query, payload);
       console.log(response)
-      if(response.status===200){
+      if (response.status === 200) {
         yield put({
           type: 'save',
-          payload:  response.data
+          payload: response.data
         });
         yield put({
           type: 'changeLoading',
@@ -29,28 +29,30 @@ export default {
       }
 
     },
-    *add({ payload, callback }, { call, put }) {
+    *add({payload, callback}, {call, put}) {
       const response = yield call(add, payload);
 
       console.log(response)
-      if(response.status===200){
+      if (response.status === 200) {
         if (callback) callback();
-      }else{
+      } else {
       }
     },
-    *edit({ payload, callback }, { call, put }) {
+    *edit({payload, callback}, {call, put}) {
       const response = yield call(edit, payload);
 
       console.log(response)
-      if(response.status===200){
+      if (response.status === 200) {
         if (callback) callback();
-      }else{
+      } else {
       }
     },
-    *remove({ payload, callback }, { call, put }) {
+    *remove({payload, callback}, {call, put}) {
       const response = yield call(remove, payload);
-      if(response.status===200){
+      console.log(response)
+      if (response.status === 200) {
         if (callback) callback();
+      } else {
       }
     },
   },

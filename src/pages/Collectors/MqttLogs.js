@@ -10,7 +10,9 @@ import {
   Button,
   Badge,
   Table,
-  DatePicker
+  DatePicker,
+  Icon,
+Select,
 } from 'antd';
 import DescriptionList from '@/components/DescriptionList';
 import styles from './Index.less';
@@ -27,18 +29,22 @@ class TableList extends PureComponent {
     per_page: 30,
     number: '',
     name: '',
-    status:'1',
+    status: '',
+    direction: '',
+    topic:'',
   };
 
 
   componentDidMount() {
-   this.handleSearch({
-        page: 1,
-        per_page: 30,
-        status:'1',
-        started_at:moment().format('YYYY-MM-DD'),
-        ended_at:moment().format('YYYY-MM-DD')
-      });
+    this.handleSearch({
+      page: 1,
+      per_page: 30,
+      status: '',
+      direction: '',
+      topic:'',
+      started_at: moment().format('YYYY-MM-DD'),
+      ended_at: moment().format('YYYY-MM-DD')
+    });
   }
 
 
@@ -46,11 +52,21 @@ class TableList extends PureComponent {
     console.log('handleSearch', values)
     const that = this;
     const {dispatch} = this.props;
+    const sendData={...values}
+    if(!sendData.direction){
+      delete sendData.direction
+    }
+    if(!sendData.status){
+      delete sendData.status
+    }
+    if(!sendData.topic){
+      delete sendData.topic
+    }
     dispatch({
       type: 'mqtt_logs/fetch',
       payload: {
-        id:this.props.history.location.query.id,
-        ...values,
+        id: this.props.history.location.query.id,
+        ...sendData,
       },
       callback: function () {
         console.log('handleSearch callback')
@@ -66,9 +82,11 @@ class TableList extends PureComponent {
     form.resetFields();
     this.handleSearch({
       page: 1,
-      status:'1',
-      started_at:moment().format('YYYY-MM-DD'),
-      ended_at:moment().format('YYYY-MM-DD'),
+      status: '',
+      direction: '',
+      topic:'',
+      started_at: moment().format('YYYY-MM-DD'),
+      ended_at: moment().format('YYYY-MM-DD'),
       per_page: 30
     })
   }
@@ -80,27 +98,53 @@ class TableList extends PureComponent {
     return (
       <Form layout="inline">
         <Row gutter={12}>
-          <Col md={6} sm={24}>
+          <Col xl={5} lg={8} md={8} sm={8}>
             <FormItem label="开始日期">
-              {getFieldDecorator('started_at',{ initialValue: moment() })(<DatePicker  format="YYYY-MM-DD" />)}
+              {getFieldDecorator('started_at', {initialValue: moment()})(<DatePicker format="YYYY-MM-DD"/>)}
             </FormItem>
           </Col>
-          <Col md={6} sm={24}>
+          <Col xl={5} lg={8} md={8} sm={8}>
             <FormItem label="结束日期">
-              {getFieldDecorator('ended_at',{ initialValue: moment() })(<DatePicker  format="YYYY-MM-DD" />)}
+              {getFieldDecorator('ended_at', {initialValue: moment()})(<DatePicker format="YYYY-MM-DD"/>)}
             </FormItem>
           </Col>
-          <Col md={5} sm={24}>
-            <FormItem label="状态">
-              {getFieldDecorator('status',{ initialValue: '1' })(
+          <Col xl={6} lg={8} md={8} sm={8}>
+            <FormItem label="方向">
+              {getFieldDecorator('direction', {initialValue: ''})(
                 <Radio.Group>
+                  <Radio.Button value="">全部</Radio.Button>
+                  <Radio.Button value="up">上行</Radio.Button>
+                  <Radio.Button value="down">下行</Radio.Button>
+                </Radio.Group>
+              )}
+            </FormItem>
+          </Col>
+          <Col xl={6} lg={8} md={8} sm={8}>
+            <FormItem label="状态">
+              {getFieldDecorator('status', {initialValue: ''})(
+                <Radio.Group>
+                  <Radio.Button value="">全部</Radio.Button>
                   <Radio.Button value="1">正常</Radio.Button>
                   <Radio.Button value="-1">异常</Radio.Button>
                 </Radio.Group>
               )}
             </FormItem>
           </Col>
-          <Col md={6} sm={24}>
+          <Col xl={5} lg={8} md={8} sm={8}>
+            <FormItem label="主题">
+              {getFieldDecorator('topic', {initialValue: ''})(
+                <Select>
+                  <Select.Option value="">全部</Select.Option>
+                  <Select.Option value="info">info</Select.Option>
+                  <Select.Option value="config">config</Select.Option>
+                  <Select.Option value="collect">collect</Select.Option>
+                  <Select.Option value="v1_ctrl">v1_ctrl</Select.Option>
+                  <Select.Option value="v2_ctrl">v2_ctrl</Select.Option>
+                </Select>
+              )}
+            </FormItem>
+          </Col>
+          <Col xl={3} lg={8} md={8} sm={8}>
             <span className={styles.submitButtons}>
               <Button type="primary" onClick={()=> {
                 const {form} = this.props;
@@ -108,11 +152,13 @@ class TableList extends PureComponent {
                   if (err) return;
 
                   const values = {
-                    status:fieldsValue.status,
-                    started_at:fieldsValue.started_at.format('YYYY-MM-DD'),
-                    ended_at:fieldsValue.ended_at.format('YYYY-MM-DD'),
+                    status: fieldsValue.status,
+                    direction: fieldsValue.direction,
+                    topic: fieldsValue.topic,
+                    started_at: fieldsValue.started_at.format('YYYY-MM-DD'),
+                    ended_at: fieldsValue.ended_at.format('YYYY-MM-DD'),
                   };
-                  console.log("values",values)
+                  console.log("values", values)
                   this.handleSearch({
                     page: this.state.page,
                     per_page: this.state.per_page,
@@ -144,12 +190,30 @@ class TableList extends PureComponent {
     } = this.props;
     const columns = [
       {
-        title: '创建时间',
-        dataIndex: 'created_at',
+        title: '序号',
+        dataIndex: 'index',
+        render:(text,record,index)=>{
+          return index+1
+        }
+      },
+      {
+        title: '服务端收发时间',
+        dataIndex: 'server_time',
+      },
+      {
+        title: '终端收发时间',
+        dataIndex: 'terminal_time',
       },
       {
         title: '主题',
         dataIndex: 'topic',
+      },
+      {
+        title: '方向',
+        dataIndex: 'direction',
+        render(val) {
+          return val==='up'?<Icon type="arrow-up" style={{color:'#1890ff'}} />:<Icon type="arrow-down"  style={{color:'#f5222d'}} />
+        },
       },
       {
         title: '状态',
@@ -171,33 +235,37 @@ class TableList extends PureComponent {
       total: meta.total,
       current: this.state.page,
       onChange: (page, pageSize)=> {
-        this.handleSearch({page, per_page: pageSize,started_at:this.state.started_at,
-          ended_at:this.state.ended_at,status:this.state.status,})
+        this.handleSearch({
+          page, per_page: pageSize, started_at: this.state.started_at,
+          ended_at: this.state.ended_at, status: this.state.status,direction: this.state.direction,topic: this.state.topic,
+        })
       },
       onShowSizeChange: (page, pageSize)=> {
-        this.handleSearch({page, per_page: pageSize,started_at:this.state.started_at,
-          ended_at:this.state.ended_at,status:this.state.status,})
+        this.handleSearch({
+          page, per_page: pageSize, started_at: this.state.started_at,
+          ended_at: this.state.ended_at, status: this.state.status,direction: this.state.direction,topic: this.state.topic,
+        })
       },
     };
     return (
       <div>
-        <div className="info-page-container" >
+        <div className="info-page-container">
 
           <div className={styles.tableList}>
             <div className={styles.tableListForm}>{this.renderForm()}</div>
-        {/*   <div className={styles.tableListOperator}>
-              <Button icon="plus" type="primary" onClick={
-                ()=>{this.setState({
-                  addModal:true
-                })}
-              }>
-                新建应用
-              </Button>
-            </div>*/}
+            {/*   <div className={styles.tableListOperator}>
+             <Button icon="plus" type="primary" onClick={
+             ()=>{this.setState({
+             addModal:true
+             })}
+             }>
+             新建应用
+             </Button>
+             </div>*/}
             <Table
-              style={{backgroundColor:'#fff'}}
+              style={{backgroundColor: '#fff',padding:'12px'}}
               loading={loading}
-              rowKey={'id'}
+              rowKey={(record)=>{return record.server_time+record.topic}}
               dataSource={data}
               columns={columns}
               bordered={true}

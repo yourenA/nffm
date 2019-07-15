@@ -1,4 +1,4 @@
-import React, {Component,Fragment} from 'react';
+import React, {Component} from 'react';
 import {connect} from 'dva';
 import request from '@/utils/request';
 import {PageHeader, Input, Table, Form, Card, Button, Col, Select, message, Row,Tooltip,Badge} from 'antd';
@@ -16,7 +16,8 @@ class SearchList extends Component {
     this.state = {
       id: 0,
       collectors:[],
-      parameters:[]
+      parameters:[],
+      sensors:[]
     }
   }
 
@@ -32,6 +33,11 @@ class SearchList extends Component {
       if(response.status===200){
         that.setState({
           collectors:response.data.data
+        },function () {
+          if(this.props.editRecord){
+            this.props.form.setFieldsValue({collector:this.props.editRecord.collector_number})
+            this.changeCollector(this.props.editRecord.collector_number)
+          }
         })
       }
     });
@@ -41,7 +47,7 @@ class SearchList extends Component {
     const findResult=find(this.state.collectors,function (o) {
       return o.number===value
     })
-    this.props.form.setFieldsValue({parameters:[]})
+    // this.props.form.setFieldsValue({parameters:[]})
     request(`/collectors/${findResult.id}/parameters`,{
       method:'GET',
       params:{
@@ -50,16 +56,35 @@ class SearchList extends Component {
     }).then(function (response) {
       if(response.status===200){
         let parameters=[]
-        if(response.data.data.valve){
-          parameters=parameters.concat(response.data.data.valve)
+        if(response.data.data.error){
+          parameters=parameters.concat(response.data.data.error)
         }
         console.log('parameters',parameters)
-        that.props.form.setFieldsValue({increment_valve_id:'',decrement_valve_id:''})
         that.setState({
           parameters
+        },function () {
+          if(that.props.editRecord){
+            that.props.form.setFieldsValue({parameters:that.props.editRecord.id})
+            that.changeNumber(that.props.editRecord.id)
+          }
         })
       }
     });
+  }
+  changeNumber=(number)=>{
+    const findSensor=find(this.state.parameters,(o)=>{
+      return o.id===number
+    })
+    const that=this
+    console.log('findSensor',findSensor)
+    this.setState({
+      sensors:findSensor.optional_display_errors
+    },function () {
+      if(that.props.editRecord){
+        that.props.form.setFieldsValue({display_error_indexes:that.props.editRecord.display_errors.reduce((pre,item)=>{pre.push(item.index);return pre},[])})
+      }
+      // this.props.form.setFieldsValue({display_error_indexes:[]})
+    })
   }
   render() {
     const {collector_types}=this.props
@@ -85,67 +110,45 @@ class SearchList extends Component {
                 <Input />
               )}
             </Form.Item>
-            {
-              !this.props.editRecord&&
-              <Fragment>
-                <FormItem
-                  required={true}
-                  label='采集器'
-                  {...formItemLayout}
-                >
-                  {getFieldDecorator('collector_id', {
-                    initialValue:  '',
-                  })(
-                    <Select showSearch  >
-                      { this.state.collectors.map(item => <Option key={item.id} value={item.id}>{item.number}/{item.name}</Option>) }
-                    </Select>
-                  )}
-                </FormItem>
-                <FormItem
-                  required={true}
-                  label='序号'
-                  {...formItemLayout}
-                >
-                  {getFieldDecorator('index', {
-                    initialValue:  '1',
-                  })(
-                    <Select  >
-                      <Option value="1">1</Option>
-                      <Option value="2">2</Option>
-                    </Select>
-                  )}
-                </FormItem>
-
-              </Fragment>
-            }
-
-
-       {/*     <FormItem
+            <FormItem
               required={true}
-              label='增压球阀'
+              label='采集器'
               {...formItemLayout}
             >
-              {getFieldDecorator('increment_valve_id', {
+              {getFieldDecorator('collector', {
+                initialValue:  '',
+              })(
+                <Select  disabled={Boolean(this.props.editRecord)} showSearch onChange={this.changeCollector} >
+                  { this.state.collectors.map(item => <Option key={item.id} value={item.number}>{item.number}/{item.name}</Option>) }
+                </Select>
+              )}
+            </FormItem>
+            <FormItem
+              required={true}
+              label='种类'
+              {...formItemLayout}
+            >
+              {getFieldDecorator('parameters', {
                 initialValue: '',
               })(
-                <Select  >
+                <Select  disabled={Boolean(this.props.editRecord)} onChange={this.changeNumber} >
                   { this.state.parameters.map(item => <Option key={item.id} value={item.id}>{item.name}</Option>) }
                 </Select>
               )}
             </FormItem>
             <FormItem
               required={true}
-              label='减压球阀'
+              label='显示故障项'
               {...formItemLayout}
             >
-              {getFieldDecorator('decrement_valve_id', {
-                initialValue: '',
+              {getFieldDecorator('display_error_indexes', {
+                initialValue:[],
               })(
-                <Select  >
-                  { this.state.parameters.map(item => <Option key={item.id} value={item.id}>{item.name}</Option>) }
+                <Select mode="multiple">
+                  { this.state.sensors.map(item => <Option key={item.index} value={item.index}>{item.name}</Option>) }
                 </Select>
               )}
-            </FormItem>*/}
+            </FormItem>
           </Form>
 
       </div>

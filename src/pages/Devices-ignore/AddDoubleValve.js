@@ -39,7 +39,7 @@ class SearchList extends Component {
   changeCollector=(value)=>{
     const that = this;
     const findResult=find(this.state.collectors,function (o) {
-      return o.number===value
+      return o.id===value
     })
     this.props.form.setFieldsValue({parameters:[]})
     request(`/collectors/${findResult.id}/parameters`,{
@@ -50,11 +50,11 @@ class SearchList extends Component {
     }).then(function (response) {
       if(response.status===200){
         let parameters=[]
-        if(response.data.data.valve){
-          parameters=parameters.concat(response.data.data.valve)
+        if(response.data.data.electric_valve){
+          parameters=parameters.concat(response.data.data.electric_valve)
         }
         console.log('parameters',parameters)
-        that.props.form.setFieldsValue({increment_valve_id:'',decrement_valve_id:''})
+        // that.props.form.setFieldsValue({increment_valve_id:'',decrement_valve_id:''})
         that.setState({
           parameters
         })
@@ -96,7 +96,7 @@ class SearchList extends Component {
                   {getFieldDecorator('collector_id', {
                     initialValue:  '',
                   })(
-                    <Select showSearch  >
+                    <Select showSearch  onChange={this.changeCollector}>
                       { this.state.collectors.map(item => <Option key={item.id} value={item.id}>{item.number}/{item.name}</Option>) }
                     </Select>
                   )}
@@ -106,46 +106,17 @@ class SearchList extends Component {
                   label='序号'
                   {...formItemLayout}
                 >
-                  {getFieldDecorator('index', {
-                    initialValue:  '1',
+                  {getFieldDecorator('parameters', {
+                    initialValue:  '',
                   })(
-                    <Select  >
-                      <Option value="1">1</Option>
-                      <Option value="2">2</Option>
+                    <Select >
+                      { this.state.parameters.map(item => <Option key={item.id} value={item.id}>{item.index}</Option>) }
                     </Select>
                   )}
                 </FormItem>
-
               </Fragment>
             }
 
-
-       {/*     <FormItem
-              required={true}
-              label='增压球阀'
-              {...formItemLayout}
-            >
-              {getFieldDecorator('increment_valve_id', {
-                initialValue: '',
-              })(
-                <Select  >
-                  { this.state.parameters.map(item => <Option key={item.id} value={item.id}>{item.name}</Option>) }
-                </Select>
-              )}
-            </FormItem>
-            <FormItem
-              required={true}
-              label='减压球阀'
-              {...formItemLayout}
-            >
-              {getFieldDecorator('decrement_valve_id', {
-                initialValue: '',
-              })(
-                <Select  >
-                  { this.state.parameters.map(item => <Option key={item.id} value={item.id}>{item.name}</Option>) }
-                </Select>
-              )}
-            </FormItem>*/}
           </Form>
 
       </div>

@@ -25,30 +25,32 @@ class AddPoliciesForm extends Component {
   componentDidMount() {
     const that = this;
 
-    const {dispatch} = this.props;
-    dispatch({
-      type: 'device_parameters/fetch',
-      payload: {
-        device_id:this.props.history.location.query.id,
-      },
-    });
+    // const {dispatch} = this.props;
+    // dispatch({
+    //   type: 'device_parameters/fetch',
+    //   payload: {
+    //     device_id:this.props.history.location.query.id,
+    //   },
+    // });
 
-    request(`/collectors`,{
-      method:'GET',
-      params:{
-        return:'all'
-      }
-    }).then(function (response) {
-      if(response.status===200){
-        that.setState({
-          collectors:response.data.data
-        })
-      }
-    });
+    // request(`/collectors`,{
+    //   method:'GET',
+    //   params:{
+    //     return:'all'
+    //   }
+    // }).then(function (response) {
+    //   if(response.status===200){
+    //     that.setState({
+    //       collectors:response.data.data
+    //     })
+    //   }
+    // });
     console.log('this.props.editRecord',this.props.editRecord)
+    this.changeCollector()
     if(this.props.editRecord&&this.props.editRecord.parameters.length>0){
-      this.props.form.setFieldsValue({collector:this.props.editRecord.parameters[0].collector_number})
-      this.changeCollector(this.props.editRecord.parameters[0].collector_number)
+
+      // this.props.form.setFieldsValue({collector:this.props.editRecord.parameters[0].collector_id})
+      // this.changeCollector(this.props.editRecord.parameters[0].collector_id)
     }
 
   }
@@ -63,19 +65,19 @@ class AddPoliciesForm extends Component {
 
   changeCollector=(value)=>{
     const that = this;
-    const {
-      device_parameters: {data},
-    } = this.props;
-    let parameters=[]
-    for(let i=0;i<data.length;i++){
-      if(data[i].collector_number===value){
-        parameters.push(data[i])
+    request(`/devices/${this.props.history.location.query.id}/parameters`,{
+      method:'GET',
+      params:{
+        // collector_id:value,
+        types:['double_ball_valve','electric_valve','generator','sensor','water_meter']
       }
-    }
-    this.setState({
-      parameters
-    })
-
+    }).then(function (response) {
+      if(response.status===200){
+        that.setState({
+          parameters:response.data.data
+        })
+      }
+    });
 
   }
 
@@ -107,7 +109,7 @@ class AddPoliciesForm extends Component {
             <Input />
           )}
         </Form.Item>
-        <FormItem
+       {/* <FormItem
           required={true}
           label='采集器'
           {...formItemLayout}
@@ -116,10 +118,10 @@ class AddPoliciesForm extends Component {
             initialValue:  '',
           })(
             <Select showSearch onChange={this.changeCollector} >
-              { this.state.collectors.map(item => <Option key={item.id} value={item.number}>{item.number}</Option>) }
+              { this.state.collectors.map(item => <Option key={item.id} value={item.id}>{item.number}</Option>) }
             </Select>
           )}
-        </FormItem>
+        </FormItem>*/}
      {/*   <FormItem
           required={true}
           label='视图模板'

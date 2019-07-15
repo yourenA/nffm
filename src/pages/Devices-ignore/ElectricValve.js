@@ -49,9 +49,9 @@ class SearchList extends Component {
         const {
           electric_valves
         } = this.props;
-        if (electric_valves.data.length > 0) {
+        if (electric_valves.data.electric_valve.length > 0) {
           this.setState({
-            activeKey: electric_valves.data[0].id
+            activeKey: electric_valves.data.electric_valve[0].id
             // activeKey: 0
           }, function () {
             // this.getValveStatus(double_ball_valves.data[0].id)
@@ -60,7 +60,7 @@ class SearchList extends Component {
               callback: ()=> {
                 const {system_configs}=that.props
                 const refresh_second = find(system_configs.data, function (o) {
-                  return o.key === 'valve_info_refresh_time'
+                  return o.key === 'electric_valve_info_refresh_time'
                 })
                 console.log('refresh_second,', refresh_second)
                 if (refresh_second) {
@@ -152,12 +152,12 @@ class SearchList extends Component {
     return (
       <div className="custom-card">
         <div className="info-page-container">
-          <Alert style={{marginBottom: '6px'}} message={`数据每隔${this.state.refresh_second}秒刷新一次`} type="info"/>
+          <Alert style={{marginBottom: '12px'}} message={`数据每隔${this.state.refresh_second}秒刷新一次`} type="info"/>
 
-          <Tabs onChange={this.onChangeTabs} style={{backgroundColor: '#fff'}} activeKey={this.state.activeKey}>
+          <Tabs  tabPosition={'left'} onChange={this.onChangeTabs} style={{backgroundColor: '#fff'}} activeKey={this.state.activeKey}>
             {
-              electric_valves.data.map((item, index)=> {
-                return <TabPane tab={item.name} key={item.id} style={{padding: '0 16px 16px'}}>
+              (electric_valves.data.electric_valve||[]).map((item, index)=> {
+                return <TabPane tab={item.name} key={item.id} style={{padding: '16px 16px'}}>
                   <Row gutter={16}>
                     <Col xs={24} sm={24} md={12} lg={12} xl={12}>
                       <Collapse activeKey={['1']}>
@@ -216,7 +216,7 @@ class SearchList extends Component {
                                 initialValue: 0
                               })(
                                 <div>
-                                  <InputNumber  min={0} max={1000}/> <span className="ant-form-text">有效值为0-1000</span>
+                                  <InputNumber  min={0} max={100} precision={1}/> <span className="ant-form-text">有效值为0-100,1位小数</span>
                                 </div>
                               )}
                             </Form.Item>

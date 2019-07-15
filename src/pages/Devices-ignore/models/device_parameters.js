@@ -1,4 +1,4 @@
-import { query,add } from '@/services/device_parameters';
+import { query,add,remove } from '@/services/device_parameters';
 
 export default {
   namespace: 'device_parameters',
@@ -36,6 +36,14 @@ export default {
       if(response.status===200){
         if (callback) callback();
       }else{
+      }
+    },
+    *remove({payload, callback}, {call, put}) {
+      const response = yield call(remove, payload);
+      console.log(response)
+      if (response.status === 200) {
+        if (callback) callback();
+      } else {
       }
     },
   },

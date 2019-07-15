@@ -8,7 +8,7 @@ import {
   Select,
   Card,
   Button,
-  List,
+  Radio ,
   message,
   Collapse,
   Switch,
@@ -39,14 +39,15 @@ class SearchList extends Component {
       mode: '1',
       valves: [],
       over_rate: 120,
-      over_recover_rate: 110,
-      under_recover_rate: 90,
+      over_recover_rate: 100,
+      under_recover_rate: 100,
       under_rate: 80,
       channels: [],
       channel: '',
       refresh_second: 0,
       activeKey: '',
-      currentValve: {}
+      currentValve: {},
+      radioValue:''
     };
   }
 
@@ -62,9 +63,9 @@ class SearchList extends Component {
         const {
           double_ball_valves
         } = this.props;
-        if (double_ball_valves.data.length > 0) {
+        if (double_ball_valves.data.double_ball_valve.length > 0) {
           this.setState({
-            activeKey: double_ball_valves.data[0].id
+            activeKey: double_ball_valves.data.double_ball_valve[0].id
           }, function () {
             // this.getValveStatus(double_ball_valves.data[0].id)
             dispatch({
@@ -72,7 +73,7 @@ class SearchList extends Component {
               callback: ()=> {
                 const {system_configs}=that.props
                 const refresh_second = find(system_configs.data, function (o) {
-                  return o.key === 'valve_info_refresh_time'
+                  return o.key === 'double_ball_valve_info_refresh_time'
                 })
                 if (refresh_second) {
                   that.setState({
@@ -127,8 +128,20 @@ class SearchList extends Component {
       sendData.under_recover = Number(this.state.under_recover)
       sendData.sensor_id = this.state.channel
     } else if (this.state.mode === '0') {
-      sendData.increment_valve_status = (this.state[this.state.activeKey] && this.state[this.state.activeKey].increment_valve_status) ? 1 : -1
-      sendData.decrement_valve_status = (this.state[this.state.activeKey] && this.state[this.state.activeKey].decrement_valve_status) ? 1 : -1
+      if(this.state.radioValue==='a'){
+        sendData.increment_valve_status=1;
+        sendData.decrement_valve_status=-1;
+      }else if(this.state.radioValue==='b'){
+        sendData.increment_valve_status=-1;
+        sendData.decrement_valve_status=1;
+      }else if(this.state.radioValue==='c'){
+        sendData.increment_valve_status=-1;
+        sendData.decrement_valve_status=-1;
+      }else{
+        message.error('请选择一个模式')
+      }
+      // sendData.increment_valve_status = (this.state[this.state.activeKey] && this.state[this.state.activeKey].increment_valve_status) ? 1 : -1
+      // sendData.decrement_valve_status = (this.state[this.state.activeKey] && this.state[this.state.activeKey].decrement_valve_status) ? 1 : -1
     }
     console.log('sendData', sendData)
     // return false
@@ -194,10 +207,10 @@ class SearchList extends Component {
     return (
       <div>
         <div className="info-page-container">
-          <Alert style={{marginBottom: '6px'}} message={`数据每隔${this.state.refresh_second}秒刷新一次`} type="info"/>
-          <Tabs onChange={this.onChangeTabs} style={{backgroundColor: '#fff'}} activeKey={this.state.activeKey}>
+          <Alert style={{marginBottom: '12px'}} message={`数据每隔${this.state.refresh_second}秒刷新一次`} type="info"/>
+          <Tabs  tabPosition={'left'} onChange={this.onChangeTabs} style={{backgroundColor: '#fff'}} activeKey={this.state.activeKey}>
             {
-              double_ball_valves.data.map((item, index)=> {
+              (double_ball_valves.data.double_ball_valve||[]).map((item, index)=> {
                 let increment_valve_current_status = '';
                 let decrement_valve_current_status = '';
                 if (this.state.currentValve. increment_valve_status) {
@@ -232,7 +245,7 @@ class SearchList extends Component {
                       break;
                   }
                 }
-                return <TabPane tab={item.name} key={item.id} style={{padding: '0 16px 16px'}}>
+                return <TabPane tab={item.name} key={item.id} style={{padding: '16px 16px'}}>
                   <Collapse activeKey={['1']}>
                     <Panel showArrow={false} header={<div><Icon type="box-plot"/> 当前策略</div>} key="1"
                     >
@@ -351,8 +364,8 @@ class SearchList extends Component {
                             </Form.Item>
 
                           </Form>
-                          <Alert message="over必须大于overRecover，overRecover必须大于underRecover，underRecover必须大于 under"
-                                 type="info" style={{marginBottom: '10px'}}/>
+                          <Alert message="over必须大于overRecover，underRecover必须大于 under"
+                                 type="info" style={{marginBottom: '10px',marginTop: '10px'}}/>
                           <h3>自动填充数据:</h3>
                           <div style={{marginBottom: '8px'}}>
                             自动数值 : <InputNumber onChange={(e)=> {
@@ -427,7 +440,16 @@ class SearchList extends Component {
                       {
                         this.state.mode === '0' &&
                         <div >
-                          <Row gutter={16}>
+                          <Radio.Group value={this.state.radioValue} onChange={(e)=>{
+                            this.setState({
+                              radioValue: e.target.value,
+                            });
+                          }} buttonStyle="solid">
+                            <Radio.Button value="a">增压</Radio.Button>
+                            <Radio.Button value="b">减压</Radio.Button>
+                            <Radio.Button value="c">停止</Radio.Button>
+                          </Radio.Group>
+                         {/* <Row gutter={16}>
                             <Col span={6}>
                               <Card className={styles.valve_card} size="small" title={'增压球阀'}>
                                 <h4>目标状态 :<Switch className="valve-switch"
@@ -446,7 +468,7 @@ class SearchList extends Component {
                                 </h4>
                               </Card>
                             </Col>
-                          </Row>
+                          </Row>*/}
 
 
                         </div>

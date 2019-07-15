@@ -356,6 +356,9 @@ class TableList extends PureComponent {
         if (e.key === 'error') {
           dispatch(routerRedux.push(`/device/devices/info/error?id=${record.id}&&name=${record.name}`));
         }
+        if (e.key === 'real_time_error') {
+          dispatch(routerRedux.push(`/device/devices/info/real_time_error?id=${record.id}&&name=${record.name}`));
+        }
 
       }}>
         <Menu.Item key="history">
@@ -365,8 +368,13 @@ class TableList extends PureComponent {
           设备视图
         </Menu.Item>
         {
+          record.services.indexOf('error')>=0&&<Menu.Item key="real_time_error">
+            故障监测
+          </Menu.Item>
+        }
+        {
           record.services.indexOf('error')>=0&&<Menu.Item key="error">
-            故障信息
+            故障查询
           </Menu.Item>
         }
         <Menu.Item key="edit">
@@ -411,7 +419,7 @@ class TableList extends PureComponent {
             {/*<a onClick={() => this.handleUpdateModalVisible(true, record)}>配置</a>*/}
             <Link to={`/device/devices/info/real_time?id=${record.id}&&name=${record.name}`}>实时数据</Link>
             <Divider type="vertical"/>
-            <Link to={`/device/devices/info/parameters?id=${record.id}&&name=${record.name}`}>设备参数/阀门</Link>
+            <Link to={`/device/devices/info/parameters?id=${record.id}&&name=${record.name}`}>设备配置</Link>
             <Divider type="vertical"/>
             {
               record.services.indexOf('double_ball_valve_control')>=0&&<span>

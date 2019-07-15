@@ -16,7 +16,8 @@ class SearchList extends Component {
     this.state = {
       id: 0,
       collectors:[],
-      parameters:[]
+      parameters:[],
+      sensors:[]
     }
   }
 
@@ -50,27 +51,12 @@ class SearchList extends Component {
     }).then(function (response) {
       if(response.status===200){
         let parameters=[]
-        for(let key in response.data.data){
-          parameters=parameters.concat(response.data.data[key])
+        if(response.data.data.generator){
+          parameters=parameters.concat(response.data.data.generator)
         }
-        // if(response.data.data.double_ball_valve){
-        //   parameters=parameters.concat(response.data.data.double_ball_valve)
-        // }
-        // if(response.data.data.electric_valve){
-        //   parameters=parameters.concat(response.data.data.electric_valve)
-        // }
-        // if(response.data.data.generator){
-        //   parameters=parameters.concat(response.data.data.generator)
-        // }
-        // if(response.data.data.sensor){
-        //   parameters=parameters.concat(response.data.data.sensor)
-        // }
-        // if(response.data.data.water_meter){
-        //   parameters=parameters.concat(response.data.data.water_meter)
-        // }
-        // if(response.data.data.error){
-        //   parameters=parameters.concat(response.data.data.error)
-        // }
+        if(response.data.data.water_meter){
+          parameters=parameters.concat(response.data.data.water_meter)
+        }
         console.log('parameters',parameters)
         that.setState({
           parameters
@@ -94,6 +80,14 @@ class SearchList extends Component {
     return (
       <div>
           <Form  onSubmit={this.handleSubmit} >
+            <Form.Item label="名称"  {...formItemLayout}>
+              {getFieldDecorator(`name`, {
+                initialValue: this.props.editRecord ? this.props.editRecord.name : '',
+                rules: [{required: true, message: '请输入名称'}],
+              })(
+                <Input />
+              )}
+            </Form.Item>
             <FormItem
               required={true}
               label='采集器'
@@ -103,7 +97,7 @@ class SearchList extends Component {
                 initialValue:  '',
               })(
                 <Select showSearch onChange={this.changeCollector} >
-                  { this.state.collectors.map(item => <Option key={item.id} value={item.number}>{item.number}</Option>) }
+                  { this.state.collectors.map(item => <Option key={item.id} value={item.number}>{item.number}/{item.name}</Option>) }
                 </Select>
               )}
             </FormItem>
@@ -112,10 +106,10 @@ class SearchList extends Component {
               label='参数'
               {...formItemLayout}
             >
-              {getFieldDecorator('parameters', {
+              {getFieldDecorator('parameter_id', {
                 initialValue: [],
               })(
-                <Select   mode="multiple" >
+                <Select >
                   { this.state.parameters.map(item => <Option key={item.id} value={item.id}>{item.name}</Option>) }
                 </Select>
               )}

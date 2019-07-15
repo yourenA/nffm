@@ -192,12 +192,17 @@ export default [
                   },
                   {
                     path: '/device/devices/info/error',
-                    name: '故障信息',
+                    name: '历史故障',
                     component: './Devices-ignore/DeviceError',
                   },
                   {
+                    path: '/device/devices/info/real_time_error',
+                    name: '历史故障',
+                    component: './Devices-ignore/DeviceRealTimeError',
+                  },
+                  {
                     path: '/device/devices/info/electric_valves',
-                    name: '故障信息',
+                    name: '电控阀门',
                     component: './Devices-ignore/ElectricValve',
                   },
                 ]
@@ -298,6 +303,12 @@ export default [
         name: '系统配置',
         icon: 'setting',
         component: './Home/SystemConfigs',
+      },
+      {
+        path: '/three',
+        name: '测试three',
+        icon: 'setting',
+        component: './Home/Three',
       },
       {
         path: '/users',

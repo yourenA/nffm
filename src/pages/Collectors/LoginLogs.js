@@ -131,6 +131,14 @@ class TableList extends PureComponent {
     } = this.props;
     const columns = [
       {
+        title: '序号',
+        dataIndex: 'index',
+        width:50,
+        render:(text,record,index)=>{
+          return index+1
+        }
+      },
+      {
         title: '登录时间',
         dataIndex: 'logined_at',
       },
@@ -167,9 +175,9 @@ class TableList extends PureComponent {
               </Button>
             </div>*/}
             <Table
-              style={{backgroundColor:'#fff'}}
+              style={{backgroundColor: '#fff',padding:'12px'}}
               loading={loading}
-              rowKey={'id'}
+              rowKey={'logined_at'}
               dataSource={data}
               columns={columns}
               bordered={true}
