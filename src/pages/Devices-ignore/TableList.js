@@ -1,7 +1,7 @@
 import React, {PureComponent, Fragment} from 'react';
 import {connect} from 'dva';
 import request from '@/utils/request';
-import { routerRedux } from 'dva/router';
+import {routerRedux} from 'dva/router';
 import moment from 'moment';
 import {Link} from 'dva/router';
 import {
@@ -43,15 +43,16 @@ const statusMap = ['default', 'processing', 'success', 'error'];
 const status = ['关闭', '运行中', '已上线', '异常'];
 
 /* eslint react/no-multi-comp:0 */
-@connect(({devices, loading,system_configs}) => ({
-  devices,system_configs
+@connect(({devices, loading, system_configs}) => ({
+  devices, system_configs
 }))
 @Form.create()
 class TableList extends PureComponent {
   constructor(props) {
     super(props);
-    this.timer=null;
+    this.timer = null;
   }
+
   state = {
     modalVisible: false,
     updateModalVisible: false,
@@ -65,7 +66,7 @@ class TableList extends PureComponent {
     name: '',
     editRecord: {},
     current: 0,
-    refresh_second:1,
+    refresh_second: 1,
     stepData: {},
     mqttInfo: {}
   };
@@ -79,18 +80,18 @@ class TableList extends PureComponent {
       for (let i = 0; i < searchArr.length; i++) {
         var tmp_arr = searchArr[i].split("=");
 
-        if (tmp_arr[0] === 'page'||tmp_arr[0] === 'page') {
-          params[tmp_arr[0]]=Number(tmp_arr[1])
+        if (tmp_arr[0] === 'page' || tmp_arr[0] === 'page') {
+          params[tmp_arr[0]] = Number(tmp_arr[1])
 
-        }else{
-          params[tmp_arr[0]]=decodeURI(tmp_arr[1])
-          this.props.form.setFieldsValue({[tmp_arr[0]]:decodeURI(tmp_arr[1])})
+        } else {
+          params[tmp_arr[0]] = decodeURI(tmp_arr[1])
+          this.props.form.setFieldsValue({[tmp_arr[0]]: decodeURI(tmp_arr[1])})
         }
       }
       // console.log('params', params)
       // this.handleSearch(params)
-    }else{
-      params={
+    } else {
+      params = {
         page: 1,
         per_page: 30,
         number: '',
@@ -98,17 +99,19 @@ class TableList extends PureComponent {
       }
     }
 
-    const that=this;
+    const that = this;
     that.handleSearch(params)
 
   }
+
   componentWillUnmount() {
     console.log('componentWillUnmount')
-    if(this.timer){
+    if (this.timer) {
       console.log(this.timer)
     }
     clearTimeout(this.timer)
   }
+
   handleMenuClick = e => {
     const {dispatch} = this.props;
     const {selectedRows} = this.state;
@@ -146,7 +149,7 @@ class TableList extends PureComponent {
         console.log('handleSearch callback')
         that.setState({
           ...values,
-        },function () {
+        }, function () {
           dispatch(routerRedux.replace(`/device/devices/list?name=${encodeURI(this.state.name)}&number=${encodeURI(this.state.number)}&page=${this.state.page}&per_page=${this.state.per_page}`)
           )
         });
@@ -195,8 +198,8 @@ class TableList extends PureComponent {
                   this.handleSearch({
                     page: this.state.page,
                     per_page: this.state.per_page,
-                    name: values.name?values.name:'',
-                    number: values.number?values.number:'',
+                    name: values.name ? values.name : '',
+                    number: values.number ? values.number : '',
                   })
 
                 });
@@ -314,7 +317,7 @@ class TableList extends PureComponent {
     const {
       devices: {data, loading, meta},
     } = this.props;
-    const { dispatch } = this.props;
+    const {dispatch} = this.props;
     const menu = (
       <Menu onClick={this.handleMenuClick} selectedKeys={[]}>
         <Menu.Item key="remove">删除</Menu.Item>
@@ -334,10 +337,10 @@ class TableList extends PureComponent {
           })
         }
         if (e.key === 'edit') {
-         // dispatch(routerRedux.push(`/device/devices/add_or_edit?id=${record.id}`))
+          // dispatch(routerRedux.push(`/device/devices/add_or_edit?id=${record.id}`))
           this.setState({
-            editRecord:record,
-            editModal:true
+            editRecord: record,
+            editModal: true
           })
         }
         if (e.key === 'mqtt') {
@@ -368,12 +371,12 @@ class TableList extends PureComponent {
           设备视图
         </Menu.Item>
         {
-          record.services.indexOf('error')>=0&&<Menu.Item key="real_time_error">
+          record.services.indexOf('error') >= 0 && <Menu.Item key="real_time_error">
             故障监测
           </Menu.Item>
         }
         {
-          record.services.indexOf('error')>=0&&<Menu.Item key="error">
+          record.services.indexOf('error') >= 0 && <Menu.Item key="error">
             故障查询
           </Menu.Item>
         }
@@ -422,13 +425,13 @@ class TableList extends PureComponent {
             <Link to={`/device/devices/info/parameters?id=${record.id}&&name=${record.name}`}>设备配置</Link>
             <Divider type="vertical"/>
             {
-              record.services.indexOf('double_ball_valve_control')>=0&&<span>
+              record.services.indexOf('double_ball_valve_control') >= 0 && <span>
                 <Link to={`/device/devices/info/valves?id=${record.id}&&name=${record.name}`}>阀门控制</Link>
             <Divider type="vertical"/>
               </span>
             }
             {
-              record.services.indexOf('electric_valve_control')>=0&&<span>
+              record.services.indexOf('electric_valve_control') >= 0 && <span>
                 <Link to={`/device/devices/info/electric_valves?id=${record.id}&&name=${record.name}`}>电控阀门控制</Link>
             <Divider type="vertical"/>
               </span>
@@ -443,37 +446,39 @@ class TableList extends PureComponent {
     const paginationProps = {
       showSizeChanger: true,
       showQuickJumper: true,
-      showTotal:total => `共 ${total} 项`,
+      showTotal: total => `共 ${total} 项`,
       pageSize: meta.per_page,
       total: meta.total,
       current: this.state.page,
       onChange: (page, pageSize)=> {
-        this.handleSearch({page, per_page: pageSize,name:this.state.name,number:this.state.number})
+        this.handleSearch({page, per_page: pageSize, name: this.state.name, number: this.state.number})
       },
       onShowSizeChange: (page, pageSize)=> {
-        this.handleSearch({page, per_page: pageSize,name:this.state.name,number:this.state.number})
+        this.handleSearch({page, per_page: pageSize, name: this.state.name, number: this.state.number})
       },
     };
     return (
       <div>
         <PageHeader
-          style={{ margin: '-24px -24px 0' }}
+          style={{margin: '-24px -24px 0'}}
           title={'设备列表'}
         />
-        <div className="info-page-container" >
+        <div className="info-page-container">
           <div className={styles.tableList}>
             <div className={styles.tableListForm}>{this.renderForm()}</div>
             <div className={styles.tableListOperator}>
               <Button icon="plus" type="primary" onClick={
-                ()=>{this.setState({
-                  addModal:true
-                })}
+                ()=> {
+                  this.setState({
+                    addModal: true
+                  })
+                }
               }>
                 新建设备
               </Button>
             </div>
             <Table
-              style={{backgroundColor:'#fff'}}
+              style={{backgroundColor: '#fff'}}
               className="custom-small-table"
               loading={loading}
               rowKey={'id'}
@@ -498,12 +503,7 @@ class TableList extends PureComponent {
                 <Description term="id"> {this.state.editRecord.id}</Description>
                 <Description term="编号"> {this.state.editRecord.number}</Description>
                 <Description term="名称"> {this.state.editRecord.name}</Description>
-                <Description term="状态">
-                  <Badge status={this.state.editRecord.is_online === 1 ? 'success' : 'error'}
-                         text={this.state.editRecord.is_online === 1 ? '在线' : '离线'}/>
-                </Description>
                 <Description term="协议">{this.state.editRecord.protocol}</Description>
-                <Description term="登录时间">{this.state.editRecord.logined_at}</Description>
                 <Description term="创建时间">{this.state.editRecord.created_at}</Description>
                 <Description term="备注">{this.state.editRecord.remark}</Description>
               </DescriptionList>

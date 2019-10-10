@@ -304,12 +304,12 @@ export default [
         icon: 'setting',
         component: './Home/SystemConfigs',
       },
-      {
+   /*   {
         path: '/three',
         name: '测试three',
         icon: 'setting',
         component: './Home/Three',
-      },
+      },*/
       {
         path: '/users',
         name: '用户管理',

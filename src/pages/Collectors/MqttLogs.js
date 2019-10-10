@@ -14,7 +14,7 @@ import {
   Icon,
 Select,
 } from 'antd';
-import DescriptionList from '@/components/DescriptionList';
+import ReactJson from 'react-json-view'
 import styles from './Index.less';
 const FormItem = Form.Item;
 
@@ -222,10 +222,6 @@ class TableList extends PureComponent {
           return <Badge status={val === 1 ? 'success' : 'error'} text={val === 1 ? '正常' : '异常'}/>;
         },
       },
-      {
-        title: '内容',
-        dataIndex: 'content',
-      },
 
     ];
     const paginationProps = {
@@ -270,6 +266,9 @@ class TableList extends PureComponent {
               columns={columns}
               bordered={true}
               size="small"
+              expandedRowRender={record => <div>
+                <ReactJson displayDataTypes={false} src={JSON.parse(record.content)} theme="monokai" collapsed={1}  name={false}/>
+              </div>}
               pagination={paginationProps}
             />
           </div>
